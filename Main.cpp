@@ -1,4 +1,4 @@
-// gcc *.cpp GUI/*.cpp GUI/Elements/*.cpp GUI/Windows/*.cpp -o main -I "src\SDL_Lib\include" -I "src\TTF_Lib\include" -L "src\SDL_Lib\lib" -L "src\TTF_Lib\lib" -lSDL3 -lstdc++ -lSDL3_ttf
+// gcc *.cpp GUI/Elements/*.cpp GUI/Windows/*.cpp Entities/*.cpp  Entities/Pathfinding/*.cpp -o main -I "src\SDL_Lib\include" -I "src\TTF_Lib\include" -L "src\SDL_Lib\lib" -L "src\TTF_Lib\lib" -lSDL3 -lstdc++ -lSDL3_ttf
 
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #include <SDL3/SDL_main.h>
@@ -7,8 +7,7 @@
 
 #include "GUI/Windows/GUI.h"
 #include "GUI/Windows/MainMenuWindow.h"
-#include "Entities.h"
-#include "GUI/Utils.h"
+#include "./Entities/Entity.h"
 
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;

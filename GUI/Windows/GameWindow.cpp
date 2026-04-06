@@ -24,7 +24,7 @@ void GameWindow::GenerateLevel(){
             level[i][j] = std::make_unique<Floor>();
         }
     }
-    level[2][2] = std::make_unique<Point>();
+    level[2][2] = std::make_unique<SmallReward>();
     level[8][8] = std::make_unique<Wall>();
 }
 

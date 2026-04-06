@@ -63,22 +63,22 @@ Wall::~Wall(){
 
 }
 
-void Point::DrawTile(SDL_Renderer *renderer, SDL_FRect *rect, int x, int y,  int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
+void SmallReward::DrawTile(SDL_Renderer *renderer, SDL_FRect *rect, int x, int y,  int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, SDL_ALPHA_OPAQUE);
     rect->x = hightMargine + x * cellHight;
     rect->y = widthMargine + y * cellWidth;
     SDL_RenderFillRect(renderer, rect);
 };
 
-void Point::ApplyEffect(Player *player, std::unique_ptr<Tile> *currentTile){
+void SmallReward::ApplyEffect(Player *player, std::unique_ptr<Tile> *currentTile){
     player->AddScore(this->score);
     *currentTile = std::make_unique<Floor>();
     std::cout << player->GetScore() << std::endl;
 }
 
-Point::Point():Tile(true){
+SmallReward::SmallReward():Tile(true){
 
 }
 
-Point::~Point(){
+SmallReward::~SmallReward(){
 }

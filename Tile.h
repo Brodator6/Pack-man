@@ -1,7 +1,7 @@
 #pragma once
 #include <SDL3/SDL.h>
 #include <memory>
-#include "Entities.h"
+#include "./Entities/Player.h"
 
 class Tile
 {
@@ -39,12 +39,12 @@ public:
 
 };
 
-class Point : public Tile{
+class SmallReward : public Tile{
 private:
     int score = 10;
 public:
     void DrawTile(SDL_Renderer *renderer, SDL_FRect *rect, int x, int y,  int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize);
     void ApplyEffect(Player *player, std::unique_ptr<Tile> *currentTile);
-    Point(/* args */);
-    ~Point() override;
+    SmallReward(/* args */);
+    ~SmallReward() override;
 };

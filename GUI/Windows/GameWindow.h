@@ -4,8 +4,7 @@
 
 #include <chrono>
 #include <memory>
-#include "../utils.h"
-#include "../../Entities.h"
+#include "../../Entities/Player.h"
 #include "../../Tile.h"
 
 
