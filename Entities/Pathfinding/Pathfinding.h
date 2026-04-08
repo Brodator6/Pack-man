@@ -2,6 +2,7 @@
 #include <limits>
 #include <vector>
 #include <memory>
+#include "../../TileData.h"
 
 
 class Tile;
@@ -39,7 +40,7 @@ class Grid{
     public:
     std::vector<std::vector<Cell>> cells;
 
-    static Grid GenerateGrid(std::vector<std::vector<std::unique_ptr<Tile>>> *level);
+    static Grid GenerateGrid(std::vector<std::vector<TileData>> *level);
 
     static Grid GenerateGrid(std::vector<std::vector<int>> &level);
 

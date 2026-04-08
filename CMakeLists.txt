@@ -6,6 +6,19 @@ add_executable(Pac-Man)
 
 target_sources(Pac-Man
     PRIVATE
-    main.cpp
-    
+    Main.cpp
+    Tile.cpp
+    TileSystem.cpp
+    UpdateInput.cpp
+    UpdateState.cpp
+    GUI/Windows/GUI.h
+    GUI/Windows/MainMenuWindow.cpp
+    GUI/Windows/GameWindow.cpp
+    GUI/Windows/ErrorWindow.cpp
+    GUI/Elements/GUIElement.cpp
+    Entities/Entity.cpp
+    Entities/Player.cpp
+    Entities/Enemy.cpp
+    Entities/Pathfinding/Pathfinding.cpp
+    Entities/AI/BehaviorTree.cpp
 )

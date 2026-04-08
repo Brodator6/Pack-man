@@ -3,7 +3,7 @@
 #include "MainMenuWindow.h"
 #include "../../Entities/Player.h"
 #include "../../Entities/Enemy.h"
-#include "../../Tile.h"
+#include "../../TileData.h"
 
 #include <chrono>
 #include <memory>
@@ -33,7 +33,7 @@ private:
     int hightMargine = 50;
     int squareSize = 40;
 
-    std::vector<std::vector<std::unique_ptr<Tile>>> level;
+    std::vector<std::vector<TileData>> level;
 
     Player *player = new Player(10, 10);//player test
 

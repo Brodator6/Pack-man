@@ -2,6 +2,8 @@
 #include "../../UpdateState.cpp"
 #include "../../UpdateInput.cpp"
 #include "../../Entities/AI/BehaviorTree.h"
+#include "../../LevelLoader.h"
+#include "../../TileSystem.h"
 
 
 #include <stdlib.h>  // For malloc, calloc, realloc, free
@@ -14,7 +16,7 @@ void GameWindow::DrawWindow(){
 
     for (int i = 0; i < rows; i++){// loop for displaying current level
         for(int j = 0; j < columns; j++){
-            level[i][j]->DrawTile((*this->renderer), &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+            DrawTile((*this->renderer), level[i][j], &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
         }
     }
     
@@ -29,17 +31,7 @@ void GameWindow::HandleEvents(SDL_Event *Event){
 };
 
 void GameWindow::GenerateLevel(){
-    level.resize(rows);
-
-    // Fill each with default Tile
-    for(int i = 0; i < rows; i++){
-        level[i].resize(columns);
-        for(int j = 0; j < rows; j++){
-            level[i][j] = std::make_unique<Floor>();
-        }
-    }
-    level[2][2] = std::make_unique<SmallReward>();
-    level[8][8] = std::make_unique<Wall>();
+    level = LevelLoader::LoadLevel("./Assets/Levels/level1.txt", rows, columns);
 }
 
 void GameWindow::HandleGameLogic(){

@@ -56,7 +56,6 @@ class FindPathNode : public Node
 {
 public:
     NodeStatus Tick(Enemy *Enemy) override {
-        std::cout << "finding path" << std::endl;
         if(Enemy->currentPath.empty()){
             Grid gameGrid;
             gameGrid = Grid::GenerateGrid(Enemy->level);
@@ -64,7 +63,6 @@ public:
             APAthFinding pathFinding;
             Enemy->currentPath = pathFinding.FindPath({Enemy->GetPositionX(), Enemy->GetPositionY()}, {Enemy->goalX, Enemy->goalX}, &gameGrid);
             
-            std::cout << "found" << std::endl;
             return NodeStatus::SUCCESS;
         };
         return NodeStatus::FALURE;
@@ -76,7 +74,6 @@ class MoveNode : public Node
 {
 public:
     NodeStatus Tick(Enemy *Enemy) override {
-        std::cout << "moving" << std::endl;
         if(!Enemy->currentPath.empty()){
             int x = Enemy->currentPath.back().x;
             int y = Enemy->currentPath.back().y;
@@ -85,7 +82,6 @@ public:
             Enemy->currentPath.pop_back();
             return NodeStatus::RUNNING;
         };
-        std::cout << "at the target" << std::endl;
         return NodeStatus::FALURE;
     }
 };

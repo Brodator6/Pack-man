@@ -3,20 +3,20 @@
 #include <queue>
 #include <Cmath>
 #include <iostream>
-#include "../../Tile.h"
+#include "../../TileSystem.h"
 #include "../../Entities/Enemy.h"
 
 //class forwarding
 class Grid;
 
-Grid Grid::GenerateGrid(std::vector<std::vector<std::unique_ptr<Tile>>> *level){
+Grid Grid::GenerateGrid(std::vector<std::vector<TileData>> *level){
         Grid grid;
 
         grid.cells.resize(level[0].size(), std::vector<Cell>(level->size(), Cell(0, 0, false)));
 
         for(int y = 0; y < level->size(); y++){
             for(int x = 0; x < level[0].size(); x++){
-                grid.cells[x][y] = Cell(x, y, (*level)[y][x]->GetIsWalkable());
+                grid.cells[x][y] = Cell(x, y, IsWalkable((*level)[y][x]));
             }
         }
 
@@ -40,9 +40,6 @@ Grid Grid::GenerateGrid(std::vector<std::vector<int>> &level){
 */
 
 std::vector<Cell> APAthFinding::FindPath(Point startingPosition, Point targetedPosition, Grid *grid){
-    std::cout << "start" <<std::endl;
-    std::cout << grid->cells.size() <<std::endl;
-
     Cell* start = &grid->cells[startingPosition.x][startingPosition.y];
     Cell* target = &grid->cells[targetedPosition.x][targetedPosition.y];
 
@@ -53,13 +50,10 @@ std::vector<Cell> APAthFinding::FindPath(Point startingPosition, Point targetedP
     std::priority_queue<Cell*, std::vector<Cell*>, CellComparator> openSet;
     openSet.push(start);
 
-    std::cout << "3" <<std::endl;
     while(!openSet.empty()){
-        std::cout << "loop start" <<std::endl;
         Cell *current = openSet.top();
 
         if (current == target){
-            std::cout << "found" <<std::endl;
             return ReconstructPath(current);
         }
             
@@ -79,7 +73,6 @@ std::vector<Cell> APAthFinding::FindPath(Point startingPosition, Point targetedP
         }
         
     }
-    std::cout << "NotFound" <<std::endl;
     return {};
 }
 
@@ -116,10 +109,10 @@ std::vector<Cell> APAthFinding::ReconstructPath(Cell *current){
         path.push_back(*walkingCell);
         walkingCell = walkingCell->parent;
     }
-
+/*
     for (size_t i = 0; i < path.size(); ++i) {
         std::cout << "Step " << i << ": [" << path[i].x << ", " << path[i].y << "]" << std::endl;
     }
-    std::cout << "Path found" <<std::endl;
+    */
     return path;
 }
