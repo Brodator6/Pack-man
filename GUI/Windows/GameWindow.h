@@ -1,17 +1,20 @@
 #pragma once
 #include "GUI.h"
 #include "MainMenuWindow.h"
+#include "../../Entities/Player.h"
+#include "../../Entities/Enemy.h"
+#include "../../Tile.h"
 
 #include <chrono>
 #include <memory>
-#include "../../Entities/Player.h"
-#include "../../Tile.h"
+
 
 
 
 // Forward declaration
 class MainMenuWindow;
 class Tile;
+
 
 class GameWindow : public GUI{
 private:
@@ -30,9 +33,11 @@ private:
     int hightMargine = 50;
     int squareSize = 40;
 
+    std::vector<std::vector<std::unique_ptr<Tile>>> level;
+
     Player *player = new Player(10, 10);//player test
 
-    std::vector<std::vector<std::unique_ptr<Tile>>> level;
+    Enemy *testEnemy = new Enemy(2, 2, &level);
 
     Button *mainMenuButton;
 public:

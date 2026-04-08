@@ -1,18 +1,23 @@
 #pragma once
 #include "Entity.h"
-#include "./Pathfinding/Pathfinding.cpp"
+#include <memory>
+#include <vector>
+
+class Cell;
+class Node;
+class Tile;
 
 
 
-
-class Enemy : Entity
+class Enemy : public Entity
 {
-protected:
-    std::vector<Cell> currentPath;
-    int goalX, goalY;
-
 public:
+    std::vector<Cell> currentPath;
+    int goalX = 0, goalY = 0;
+    std::unique_ptr<Node> AI;
+    std::vector<std::vector<std::unique_ptr<Tile>>> *level;
 
-    Enemy(/* args */);
-    ~Enemy();
+    void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) override;
+
+    Enemy(int x, int y, std::vector<std::vector<std::unique_ptr<Tile>>> *level);
 };

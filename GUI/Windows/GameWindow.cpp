@@ -1,13 +1,27 @@
 #include "GameWindow.h"
 #include "../../UpdateState.cpp"
 #include "../../UpdateInput.cpp"
+#include "../../Entities/AI/BehaviorTree.h"
+
 
 #include <stdlib.h>  // For malloc, calloc, realloc, free
 #include <stdio.h> 
 
 
 void GameWindow::DrawWindow(){
-    //mainMenuButton->DrawElement(*renderer);
+    SDL_FRect rect;
+    rect = {0, 0, (float)cellWidth, (float)cellHight};
+
+    for (int i = 0; i < rows; i++){// loop for displaying current level
+        for(int j = 0; j < columns; j++){
+            level[i][j]->DrawTile((*this->renderer), &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+        }
+    }
+    
+
+    player->DrawEntity((*this->renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+
+    testEnemy->DrawEntity((*this->renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
 };
 
 void GameWindow::HandleEvents(SDL_Event *Event){
@@ -35,28 +49,12 @@ void GameWindow::HandleGameLogic(){
 
     UpdateInput(player->movement);
     
-    accumulator += currentTimeFrame - previousTimeFrame;
-    //std::cout << "accumulator: " << accumulator.count() << " || deltaTime: " << deltaTime.count() << std::endl;
-
-    
+    accumulator += currentTimeFrame - previousTimeFrame;    
     while(accumulator >= deltaTime ){
         UpdateState(player, level, rows, columns);
+        testEnemy->AI->Tick(testEnemy);
         accumulator -= deltaTime;
     }
-    
-    SDL_FRect rect;
-    rect = {0, 0, (float)cellWidth, (float)cellHight};
-
-    for (int i = 0; i < rows; i++){// loop for displaying current level
-        for(int j = 0; j < columns; j++){
-            level[i][j]->DrawTile((*this->renderer), &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
-        }
-    }
-    
-
-    player->DrawEntity((*this->renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
-    
-
 }
 
 std::function<void()> GameWindow::ToMainMenu(){
