@@ -6,8 +6,10 @@
 
 #include <iostream>
 #include <string>
+#include <memory>
 #include "functional"
 
+#include "MenuManager.h"
 #include "../Elements/GUIElement.h"
 #include "../Elements/Button.h"
 
@@ -17,9 +19,9 @@ class GUI
 protected:
     //window related data 
     SDL_Window **window = NULL;
-    GUI **currentScreen = NULL;
-    GUI *oldScreen = NULL;
     SDL_Renderer **renderer = NULL;
+    MenuManager *menus;
+
 
     //centralized data for checkbox focusing detection
     int inactiveTextBoxCounter = 0;
@@ -38,19 +40,23 @@ public:
 
     }
 
-    void deleteOldScreen(GUI* oldScreen){
-        delete oldScreen;
+
+    std::function<void()> BackToPreviousMenu(){
+        return [this](){
+            if(!menus->IsEmpty()){
+            menus->RequestMenuPop();
+            }
+        };
     }
     
-    GUI(GUI **currentScreen, GUI *oldScreen, SDL_Window **window, SDL_Renderer **renderer){
-        this->currentScreen = currentScreen;
+    GUI(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer){
+        this->menus = menus;
         this->window = window;
         this->renderer = renderer;
-        this->oldScreen = oldScreen;
     }
 
     ~GUI(){
-        std::cout << "deconstructed" << std::endl;
+        std::cout << "Menu deconstructed" << std::endl;
         TTF_CloseFont(font);
     }
 };

@@ -26,7 +26,7 @@ public:
 
     std::function<void()> Quit();
 
-    MainMenuWindow(GUI **currentScreen, GUI *oldScreen, SDL_Window **window, SDL_Renderer **renderer);
+    MainMenuWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer);
     
     ~MainMenuWindow();
 };

@@ -8,5 +8,6 @@ static void UpdateInput(std::map<SDL_Scancode, bool>& control)
 
     for(auto key:control){//pasting keystate from keyboard into control
         control[key.first] = keyStates[key.first];
+
     }
 }

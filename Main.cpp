@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "GUI/Windows/GUI.h"
+#include "GUI/Windows/MenuManager.h"
 #include "GUI/Windows/MainMenuWindow.h"
 #include "./Entities/Entity.h"
 
@@ -15,7 +16,7 @@ static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
 SDL_FRect rect;
 
-GUI *screen = nullptr;
+MenuManager menus;
 
 //some parameters for displaying staff
 const int rows = 20;
@@ -53,7 +54,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_SetWindowTitle(window, "sas");
 
-    screen = new MainMenuWindow(&screen, nullptr, &window, &renderer);
+    menus.PushMenu(std::make_unique<MainMenuWindow>(&menus, &window, &renderer));
 
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
@@ -62,7 +63,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 /* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
-    screen->HandleEvents(event);
+    menus.GetMenu()->HandleEvents(event);
     switch (event->type)
     {
     case SDL_EVENT_MOUSE_MOTION:
@@ -80,11 +81,13 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
+    menus.applyPendingRequest();
+    
     DrawBackground(renderer);
 
-    screen->HandleGameLogic();
+    menus.GetMenu()->HandleGameLogic();
 
-    screen->DrawWindow();
+    menus.GetMenu()->DrawWindow();
 
     SDL_RenderPresent(renderer);
     

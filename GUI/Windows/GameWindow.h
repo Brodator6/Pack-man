@@ -19,7 +19,7 @@ class Tile;
 class GameWindow : public GUI{
 private:
     //data to manage game loop
-    std::chrono::duration<double> deltaTime = std::chrono::duration<float>(1.0/20.0);
+    std::chrono::duration<double> deltaTime = std::chrono::duration<float>(1.0/10.0);
     std::chrono::duration<double> t = std::chrono::duration<float>(0.0);
     std::chrono::duration<double> accumulator = std::chrono::duration<float>(0.0);
     std::chrono::time_point<std::chrono::high_resolution_clock> previousTimeFrame = std::chrono::high_resolution_clock::now(); // might want to replace auto with smth different
@@ -52,6 +52,6 @@ public:
 
     std::function<void()> ToMainMenu();
 
-    GameWindow(GUI **currentScreen, GUI *oldScreen, SDL_Window **window, SDL_Renderer **renderer);
+    GameWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer);
     ~GameWindow();
 };

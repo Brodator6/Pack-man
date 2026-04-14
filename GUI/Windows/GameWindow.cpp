@@ -1,4 +1,5 @@
 #include "GameWindow.h"
+
 #include "../../UpdateState.cpp"
 #include "../../UpdateInput.cpp"
 #include "../../Entities/AI/BehaviorTree.h"
@@ -39,11 +40,12 @@ void GameWindow::HandleGameLogic(){
     previousTimeFrame = currentTimeFrame;
     currentTimeFrame = std::chrono::high_resolution_clock::now();
 
-    UpdateInput(player->movement);
+    UpdateInput(player->controls);
     
     accumulator += currentTimeFrame - previousTimeFrame;    
     while(accumulator >= deltaTime ){
         UpdateState(player, level, rows, columns);
+        player->Move();
         testEnemy->AI->Tick(testEnemy);
         accumulator -= deltaTime;
     }
@@ -51,13 +53,11 @@ void GameWindow::HandleGameLogic(){
 
 std::function<void()> GameWindow::ToMainMenu(){
     return [this](){
-        *currentScreen = new MainMenuWindow(currentScreen, *currentScreen, window, renderer);
-        delete oldScreen;
-        
+        menus->RequestRootSwap(std::make_unique<MainMenuWindow>(menus, window, renderer));
     };
 }
 
-GameWindow::GameWindow(GUI **currentScreen, GUI *oldScreen, SDL_Window **window, SDL_Renderer **renderer) : GUI(currentScreen, oldScreen, window, renderer){
+GameWindow::GameWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer) : GUI(menus, window, renderer){
     GenerateLevel();
     mainMenuButton = new Button(300, 200, 200, 50, this->ToMainMenu(), "To The Menu" , font, &textColor, (*this->renderer));
 }

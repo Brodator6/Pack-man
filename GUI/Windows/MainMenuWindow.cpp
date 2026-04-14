@@ -1,4 +1,5 @@
 #include "MainMenuWindow.h"
+#include "ErrorWindow.h"
 
 void MainMenuWindow::DrawWindow(){
     startButton->DrawElement((*this->renderer));
@@ -15,15 +16,14 @@ void MainMenuWindow::HandleEvents(SDL_Event *Event){
 
 std::function<void()> MainMenuWindow::StartTheGame(){
     return [this](){
-        *currentScreen = new GameWindow(currentScreen, *currentScreen, window, renderer);
-        delete oldScreen;
+        menus->RequestRootSwap(std::make_unique<GameWindow>(menus, window, renderer));
     };
 }
 
 
 std::function<void()> MainMenuWindow::SwitchToTheSettings(){
     return [this](){
-        std::cout << "Start" << std::endl;
+        menus->PushMenu(std::make_unique<ErrorWindow>(menus, window, renderer));
     };
 }
 
@@ -39,7 +39,7 @@ std::function<void()> MainMenuWindow::Quit(){
 }
 
 
-MainMenuWindow::MainMenuWindow(GUI **currentScreen, GUI *oldScreen, SDL_Window **window, SDL_Renderer **renderer) : GUI(currentScreen, oldScreen, window, renderer){
+MainMenuWindow::MainMenuWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer) : GUI(menus, window, renderer){
     startButton = new Button(300, 200, 200, 50, this->StartTheGame(), "Start" , font, &textColor, (*this->renderer));
     settingsButton = new Button(300, 300, 200, 50, this->SwitchToTheSettings(), "Settings" , font, &textColor, (*this->renderer));
     quitButton = new Button(300, 400, 200, 50, this->Quit(), "Quit" , font, &textColor, (*this->renderer));
