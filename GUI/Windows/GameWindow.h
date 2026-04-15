@@ -36,14 +36,40 @@ private:
 
     std::vector<std::vector<TileData>> level;
 
-    Player *player = new Player(10, 10);//player test
+    Player player = Player(10, 10);//player test
 
-    Enemy *testEnemy = new Enemy(2, 2, &level);
+    std::vector<Enemy> enemies;
+
+    static constexpr int kMaxEntitiesPerCell = 3;
+    static constexpr int kPlayerEntityID = 0;
+    static constexpr int kEnemyEntityIdOffset = 1;
+
+    struct GridCell {
+        int entityIDs[kMaxEntitiesPerCell];
+        GridCell(){ Clear(); }
+        void Clear(){ for(int i = 0; i < kMaxEntitiesPerCell; ++i) entityIDs[i] = -1; }
+        bool AddEntity(int entityID){
+            for(int i = 0; i < kMaxEntitiesPerCell; ++i){
+                if(entityIDs[i] == -1){
+                    entityIDs[i] = entityID;
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
+
+    std::vector<GridCell> shadowGrid;
 
     Button *mainMenuButton;
 public:
 
     void DrawWindow();
+    void UpdateShadowGrid();
+    Entity* GetEntityById(int entityID);
+    const GridCell* GetGridCell(int x, int y) const;
+    int GetShadowGridWidth() const;
+    int GetShadowGridHeight() const;
 
     SDL_AppResult HandleEvents(SDL_Event *Event);
 

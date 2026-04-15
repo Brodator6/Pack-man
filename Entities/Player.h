@@ -25,6 +25,8 @@ public:
     std::string GetName() const;
     void SetTargetPosition(int x, int y);
 
+    bool HasReachedNode() const;
+
     void Move();
 
     void UpdateMovement(std::vector<std::vector<TileData>> &level, int rows, int columns);

@@ -14,23 +14,25 @@ void Player::SetTargetPosition(int x, int y){
     this->targetY = y;
 }
 
+bool Player::HasReachedNode() const {
+    return visualX == float(xPosition) && visualY == float(yPosition);
+}
+
 void Player::UpdateMovement(std::vector<std::vector<TileData>> &level, int rows, int columns){
-    if(this->controls[SDL_SCANCODE_DOWN] == true){
-        this->direction = Direction::Down;
-        this->SetTargetPosition(this->GetPositionX(),
-        this->GetPositionY() + ((IsWalkable(level[(this->GetPositionY() + 1) % rows][this->GetPositionX()]))) - ((this->GetPositionY() >= rows - 1) * rows));
-    }else if(this->controls[SDL_SCANCODE_RIGHT] == true){
-        this->direction = Direction::Right;
-        this->SetTargetPosition(this->GetPositionX() + ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() + 1) % columns])))  - ((this->GetPositionX() >= columns - 1) * columns),
-        this->GetPositionY());
-    }else if(this->controls[SDL_SCANCODE_UP] == true){
-        this->direction = Direction::Up;
-        this->SetTargetPosition(this->GetPositionX(),
-        this->GetPositionY() - ((IsWalkable(level[(this->GetPositionY() - 1 + rows) % rows][this->GetPositionX()])))  + ((this->GetPositionY() <= 0) * rows));
-    }else if(this->controls[SDL_SCANCODE_LEFT] == true){
-        this->direction = Direction::Left;
-        this->SetTargetPosition(this->GetPositionX() - ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() - 1 + columns) % columns])))  + ((this->GetPositionX() <= 0) * columns),
-        this->GetPositionY());
+    if (this->HasReachedNode()) {
+        if(this->controls[SDL_SCANCODE_DOWN] == true){
+            this->SetTargetPosition(this->GetPositionX(),
+            this->GetPositionY() + ((IsWalkable(level[(this->GetPositionY() + 1) % rows][this->GetPositionX()]))) - ((this->GetPositionY() >= rows - 1) * rows));
+        }else if(this->controls[SDL_SCANCODE_RIGHT] == true){
+            this->SetTargetPosition(this->GetPositionX() + ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() + 1) % columns])))  - ((this->GetPositionX() >= columns - 1) * columns),
+            this->GetPositionY());
+        }else if(this->controls[SDL_SCANCODE_UP] == true){
+            this->SetTargetPosition(this->GetPositionX(),
+            this->GetPositionY() - ((IsWalkable(level[(this->GetPositionY() - 1 + rows) % rows][this->GetPositionX()])))  + ((this->GetPositionY() <= 0) * rows));
+        }else if(this->controls[SDL_SCANCODE_LEFT] == true){
+            this->SetTargetPosition(this->GetPositionX() - ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() - 1 + columns) % columns])))  + ((this->GetPositionX() <= 0) * columns),
+            this->GetPositionY());
+        }
     }
 }
 
