@@ -18,7 +18,7 @@ private:
 public:
     void DrawWindow();
 
-    void HandleEvents(SDL_Event *Event);
+    SDL_AppResult HandleEvents(SDL_Event *Event);
 
     std::function<void()> StartTheGame();
 

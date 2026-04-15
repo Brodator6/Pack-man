@@ -1,33 +1,37 @@
 #include "Player.h"
+#include "../TileSystem.h"
 #include <cmath>
 
-Player::Player(int x, int y, std::string name, std::map<SDL_Scancode, bool> movement):Entity{x,y}, name{name}, controls{controls}{
-    targetX = x;
-    targetY = y;
-    visualX = x;
-    visualY = y;
-}
-
-Player::~Player(){
-
-}
-
 //functions
-std::string Player::GetName() const{
-    return name;
-}
+std::string Player::GetName() const{return name;}
 
-int Player::GetScore() const{
-    return score;
-}
+int Player::GetScore() const{return score;}
 
-void Player::AddScore(int extraPoints){
-    score += extraPoints;
-}
+void Player::AddScore(int extraPoints){score += extraPoints;}
 
 void Player::SetTargetPosition(int x, int y){
     this->targetX = x;
     this->targetY = y;
+}
+
+void Player::UpdateMovement(std::vector<std::vector<TileData>> &level, int rows, int columns){
+    if(this->controls[SDL_SCANCODE_DOWN] == true){
+        this->direction = Direction::Down;
+        this->SetTargetPosition(this->GetPositionX(),
+        this->GetPositionY() + ((IsWalkable(level[(this->GetPositionY() + 1) % rows][this->GetPositionX()]))) - ((this->GetPositionY() >= rows - 1) * rows));
+    }else if(this->controls[SDL_SCANCODE_RIGHT] == true){
+        this->direction = Direction::Right;
+        this->SetTargetPosition(this->GetPositionX() + ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() + 1) % columns])))  - ((this->GetPositionX() >= columns - 1) * columns),
+        this->GetPositionY());
+    }else if(this->controls[SDL_SCANCODE_UP] == true){
+        this->direction = Direction::Up;
+        this->SetTargetPosition(this->GetPositionX(),
+        this->GetPositionY() - ((IsWalkable(level[(this->GetPositionY() - 1 + rows) % rows][this->GetPositionX()])))  + ((this->GetPositionY() <= 0) * rows));
+    }else if(this->controls[SDL_SCANCODE_LEFT] == true){
+        this->direction = Direction::Left;
+        this->SetTargetPosition(this->GetPositionX() - ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() - 1 + columns) % columns])))  + ((this->GetPositionX() <= 0) * columns),
+        this->GetPositionY());
+    }
 }
 
 void Player::Move(){
@@ -62,6 +66,38 @@ void Player::Move(){
     }
 }
 
+void Player::UseAbility(){
+    for(int i = 0; i < 4; i++){
+        if(abilities[i].cooldownRemaining < 0.1f && !controls[(SDL_Scancode)(i + SDL_SCANCODE_1)]) {continue;}
+        if (abilities[i].isConsumable && abilities[i].charges <= 0) {
+            abilities[i] = {AbilityType::None, 0, 0, 0, false}; 
+            continue;
+        }
+
+        abilities[i].maxCooldown = abilities[i].cooldownRemaining;
+
+        if(abilities[i].isConsumable) {abilities[i].charges--;}
+        switch (abilities[i].type) {
+            case AbilityType::Claymore:
+                std::cout << "Casting Fireball" << std::endl;
+                break;
+            default:
+                std::cout << "Unidentified behavior" << std::endl;
+                break;
+        }
+    }
+}
+
+void Player::UpdateAbilitiesCooldown(float deltaTime){
+    for(auto &ability : abilities){
+        if(ability.cooldownRemaining > 0.0f){
+            ability.cooldownRemaining -= deltaTime;
+        }else{
+            ability.cooldownRemaining = 0;
+        }
+    }
+}
+
 void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
     this->rect.x = hightMargine + visualX * cellHight + 5;
@@ -71,5 +107,17 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
     SDL_RenderFillRect(renderer, &this->rect);
 }
 
+Player::Player(int x, int y, std::string name, std::map<SDL_Scancode, bool> movement):Entity{x,y}, name{name}, controls{controls}{
+    targetX = x;
+    targetY = y;
+    visualX = x;
+    visualY = y;
 
-//  gcc Entities.cpp -o Entities -I "D:\PRG\Pac-man\src\include" -L "D:\PRG\Pac-man\src\lib" -lSDL3 -lstdc++
+    abilities[AbilityID::permanentAbility1] = Ability{AbilityType::None, 0, 0, 0, false};
+    abilities[AbilityID::permanentAbility2] = {AbilityType::Claymore, 0, 10, 0, false};
+    abilities[AbilityID::consumableAbility1] = {AbilityType::Claymore, 0, 0, 0, true};
+    abilities[AbilityID::consumableAbility2] = {AbilityType::Claymore, 0, 10, 1, true};
+
+}
+
+Player::~Player(){}

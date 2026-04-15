@@ -1,6 +1,6 @@
 #include "GameWindow.h"
 
-#include "../../UpdateState.cpp"
+//#include "../../UpdateState.cpp"
 #include "../../UpdateInput.cpp"
 #include "../../Entities/AI/BehaviorTree.h"
 #include "../../LevelLoader.h"
@@ -27,8 +27,20 @@ void GameWindow::DrawWindow(){
     testEnemy->DrawEntity((*this->renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
 };
 
-void GameWindow::HandleEvents(SDL_Event *Event){
-    //mainMenuButton->HandleKey(*Event);
+SDL_AppResult GameWindow::HandleEvents(SDL_Event *Event){
+    switch (Event->type){
+    case SDL_EVENT_KEY_DOWN:
+        switch (Event->key.scancode){
+            case SDL_SCANCODE_ESCAPE:
+                std::cout << "THE WORLD" << std::endl;
+                isPaused = !isPaused;
+        }
+
+    default:
+        break;
+    }
+
+    return SDL_APP_CONTINUE;
 };
 
 void GameWindow::GenerateLevel(){
@@ -36,19 +48,31 @@ void GameWindow::GenerateLevel(){
 }
 
 void GameWindow::HandleGameLogic(){
-
     previousTimeFrame = currentTimeFrame;
     currentTimeFrame = std::chrono::high_resolution_clock::now();
+    if(!isPaused){
 
-    UpdateInput(player->controls);
-    
-    accumulator += currentTimeFrame - previousTimeFrame;    
-    while(accumulator >= deltaTime ){
-        UpdateState(player, level, rows, columns);
-        player->Move();
-        testEnemy->AI->Tick(testEnemy);
-        accumulator -= deltaTime;
+        UpdateInput(player->controls);
+        
+        accumulator += currentTimeFrame - previousTimeFrame;    
+        while(accumulator >= deltaTime){
+            UpdateState();
+            player->Move();
+            testEnemy->AI->Tick(testEnemy);
+            accumulator -= deltaTime;
+        }
     }
+}
+
+void GameWindow::UpdateState(){
+    //this IS hell
+    player->UpdateMovement(level, rows, columns);
+
+    player->UseAbility();
+
+    player->UpdateAbilitiesCooldown(deltaTime.count());
+
+    ApplyEffect(player, level[player->GetPositionY()][player->GetPositionX()]);
 }
 
 std::function<void()> GameWindow::ToMainMenu(){

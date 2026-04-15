@@ -7,10 +7,12 @@ void MainMenuWindow::DrawWindow(){
     quitButton->DrawElement((*this->renderer));
 }
 
-void MainMenuWindow::HandleEvents(SDL_Event *Event){
+SDL_AppResult MainMenuWindow::HandleEvents(SDL_Event *Event){
     startButton->HandleKey((*Event));
     settingsButton->HandleKey((*Event));
     quitButton->HandleKey((*Event));
+
+    return SDL_APP_CONTINUE;
 }
 
 

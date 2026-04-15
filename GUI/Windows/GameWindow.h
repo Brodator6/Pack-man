@@ -24,6 +24,7 @@ private:
     std::chrono::duration<double> accumulator = std::chrono::duration<float>(0.0);
     std::chrono::time_point<std::chrono::high_resolution_clock> previousTimeFrame = std::chrono::high_resolution_clock::now(); // might want to replace auto with smth different
     std::chrono::time_point<std::chrono::high_resolution_clock> currentTimeFrame = std::chrono::high_resolution_clock::now();
+    bool isPaused = false;
 
     int rows = 20;
     int columns = 20;
@@ -44,11 +45,13 @@ public:
 
     void DrawWindow();
 
-    void HandleEvents(SDL_Event *Event);
+    SDL_AppResult HandleEvents(SDL_Event *Event);
 
     void HandleGameLogic() override;
 
     void GenerateLevel();
+
+    void UpdateState();
 
     std::function<void()> ToMainMenu();
 

@@ -4,6 +4,15 @@
 #include <map>
 #include <SDL3/SDL.h>
 
+#include <iostream>
+
+enum class Direction{
+    Left,
+    Up,
+    Right,
+    Down
+};
+
 class Entity
 {
 protected:
@@ -11,6 +20,7 @@ protected:
     int xPosition;
     int yPosition;
 public:
+    Direction direction;
     int GetPositionX() const;
     int GetPositionY() const;
     void SetPosition(int X, int Y);

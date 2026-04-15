@@ -66,8 +66,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
     menus.GetMenu()->HandleEvents(event);
     switch (event->type)
     {
-    case SDL_EVENT_MOUSE_MOTION:
-        break;
     case SDL_EVENT_QUIT:
         return SDL_APP_SUCCESS;
     
@@ -82,7 +80,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     menus.applyPendingRequest();
-    
+
     DrawBackground(renderer);
 
     menus.GetMenu()->HandleGameLogic();
