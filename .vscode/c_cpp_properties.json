@@ -4,8 +4,8 @@
             "name": "Win32",
             "includePath": [
                 "${workspaceFolder}/**",
+                "${workspaceFolder}/src/SDL_Image/include",
                 "C:/stuff/mSYS2/ucrt64/include/**"
-                //"${workspaceFolder}/src/include"
             ],
             "defines": [
                 "_DEBUG",

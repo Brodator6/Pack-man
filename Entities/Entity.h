@@ -19,6 +19,8 @@ protected:
     SDL_FRect rect;
     int xPosition;
     int yPosition;
+    SDL_Texture *texture;
+
 public:
     Direction direction;
     int GetPositionX() const;
@@ -27,7 +29,7 @@ public:
     
     virtual void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) = 0;
     
-    //void DoMovement(int level[10][10]);
     Entity(int x, int y);
+    Entity(int x, int y, SDL_Texture *tex);
     ~Entity() = default;
 };

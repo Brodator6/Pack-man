@@ -28,7 +28,7 @@ protected:
     
 
     bool IsWithinRectangle(int x, int y){//function for detecting hovering over element
-        return (rect.x < x) * (rect.x + rect.w > x) * (rect.y < y) * (rect.y + rect.h > y);
+        return (rect.x < x) && (rect.x + rect.w > x) && (rect.y < y) && (rect.y + rect.h > y);
     }
 
     void SetTextAsTexture(std::string *text){//function for setting text as a texture for further text displaying

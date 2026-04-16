@@ -4,6 +4,7 @@
 #include "../../Entities/Player.h"
 #include "../../Entities/Enemy.h"
 #include "../../TileData.h"
+#include "../../DataStructs.h"
 
 #include <chrono>
 #include <memory>
@@ -36,32 +37,14 @@ private:
 
     std::vector<std::vector<TileData>> level;
 
-    Player player = Player(10, 10);//player test
+    Player player = Player(8, 8, IMG_LoadTexture(*renderer, "./Assets/Sprites/testSprite.png"));//player test
 
     std::vector<Enemy> enemies;
 
-    static constexpr int kMaxEntitiesPerCell = 3;
     static constexpr int kPlayerEntityID = 0;
     static constexpr int kEnemyEntityIdOffset = 1;
 
-    struct GridCell {
-        int entityIDs[kMaxEntitiesPerCell];
-        GridCell(){ Clear(); }
-        void Clear(){ for(int i = 0; i < kMaxEntitiesPerCell; ++i) entityIDs[i] = -1; }
-        bool AddEntity(int entityID){
-            for(int i = 0; i < kMaxEntitiesPerCell; ++i){
-                if(entityIDs[i] == -1){
-                    entityIDs[i] = entityID;
-                    return true;
-                }
-            }
-            return false;
-        }
-    };
-
     std::vector<GridCell> shadowGrid;
-
-    Button *mainMenuButton;
 public:
 
     void DrawWindow();

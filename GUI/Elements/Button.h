@@ -15,7 +15,7 @@ public:
         SDL_RenderTexture(renderer, textTexture, NULL, &textRect);
     };
 
-    void HandleKey(SDL_Event Event){//function to handle element event
+    void HandleKey(SDL_Event &Event){//function to handle element event
         if(IsWithinRectangle((int)Event.motion.x ,(int)Event.motion.y)){
             darkening = -55;
         }else{

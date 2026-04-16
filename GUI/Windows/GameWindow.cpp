@@ -36,8 +36,9 @@ SDL_AppResult GameWindow::HandleEvents(SDL_Event *Event){
             case SDL_SCANCODE_ESCAPE:
                 std::cout << "THE WORLD" << std::endl;
                 isPaused = !isPaused;
+            default: 
+                break;
         }
-
     default:
         break;
     }
@@ -61,7 +62,8 @@ void GameWindow::HandleGameLogic(){
             UpdateState();
             player.Move();
             for(auto &enemy : enemies){
-                enemy.AI->Tick(&enemy);
+                Blackboard bb = {enemy, level, shadowGrid};
+                enemy.AI->Tick(bb);
             }
             UpdateShadowGrid();
             accumulator -= deltaTime;
@@ -77,6 +79,12 @@ void GameWindow::UpdateState(){
 
     player.UpdateAbilitiesCooldown(deltaTime.count());
 
+    for(auto id : shadowGrid[player.GetPositionY() * rows + player.GetPositionX()].entityIDs){
+        if(id > 0){
+            menus->RequestRootSwap(std::make_unique<MainMenuWindow>(menus, window, renderer));
+        }
+    }
+
     ApplyEffect(&player, level[player.GetPositionY()][player.GetPositionX()]);
 }
 
@@ -88,9 +96,9 @@ std::function<void()> GameWindow::ToMainMenu(){
 
 GameWindow::GameWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer) : GUI(menus, window, renderer){
     GenerateLevel();
+
+    enemies.push_back(Enemy(10, 10));
     shadowGrid.resize(rows * columns);
-    mainMenuButton = new Button(300, 200, 200, 50, this->ToMainMenu(), "To The Menu" , font, &textColor, (*this->renderer));
-    enemies.push_back(Enemy(2, 2, &level));
     UpdateShadowGrid();
 }
 
@@ -133,7 +141,7 @@ Entity* GameWindow::GetEntityById(int entityID){
     return nullptr;
 }
 
-const GameWindow::GridCell* GameWindow::GetGridCell(int x, int y) const{
+const GridCell* GameWindow::GetGridCell(int x, int y) const{
     if(x < 0 || x >= columns || y < 0 || y >= rows){
         return nullptr;
     }

@@ -23,22 +23,6 @@ Grid Grid::GenerateGrid(std::vector<std::vector<TileData>> *level){
         return grid;
 }
 
-/*
-Grid Grid::GenerateGrid(std::vector<std::vector<int>> &level){
-    Grid grid;
-
-    grid.cells.resize(level[0].size(), std::vector<Cell>(level.size(), Cell(0, 0, false)));
-
-    for(int y = 0; y < level.size(); y++){
-        for(int x = 0; x < level[0].size(); x++){
-            grid.cells[x][y] = Cell(x, y, level[y][x]);
-        }
-    }
-
-    return grid;
-}
-*/
-
 std::vector<Cell> APAthFinding::FindPath(Point startingPosition, Point targetedPosition, Grid *grid){
     Cell* start = &grid->cells[startingPosition.x][startingPosition.y];
     Cell* target = &grid->cells[targetedPosition.x][targetedPosition.y];
@@ -66,8 +50,6 @@ std::vector<Cell> APAthFinding::FindPath(Point startingPosition, Point targetedP
                 n->costFromStart = tentativeCost;
                 n->costToTarget = tentativeCost + GetDistance(n, target);
                 
-                // In a basic A*, we just push. If it's already there with a higher cost,
-                // the priority queue will naturally pick the lower cost one first.
                 openSet.push(n);
             }
         }
@@ -109,10 +91,5 @@ std::vector<Cell> APAthFinding::ReconstructPath(Cell *current){
         path.push_back(*walkingCell);
         walkingCell = walkingCell->parent;
     }
-/*
-    for (size_t i = 0; i < path.size(); ++i) {
-        std::cout << "Step " << i << ": [" << path[i].x << ", " << path[i].y << "]" << std::endl;
-    }
-    */
     return path;
 }

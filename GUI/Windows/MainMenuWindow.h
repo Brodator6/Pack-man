@@ -10,10 +10,9 @@ class GameWindow;
 
 class MainMenuWindow : public GUI{
 private:
-    Button *startButton;
-    Button *settingsButton;
-    Button *quitButton;
-    //Button *ProgressionButton;
+    Button startButton = Button(300, 200, 200, 50, this->StartTheGame(), "Start" , font, &textColor, (*this->renderer));
+    Button settingsButton = Button(300, 300, 200, 50, this->SwitchToTheSettings(), "Settings" , font, &textColor, (*this->renderer));
+    Button quitButton = Button(300, 400, 200, 50, this->Quit(), "Quit" , font, &textColor, (*this->renderer));
 
 public:
     void DrawWindow();

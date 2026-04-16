@@ -1,4 +1,4 @@
-// gcc *.cpp GUI/Elements/*.cpp GUI/Windows/*.cpp Entities/*.cpp  Entities/Pathfinding/*.cpp -o main -I "src\SDL_Lib\include" -I "src\TTF_Lib\include" -L "src\SDL_Lib\lib" -L "src\TTF_Lib\lib" -lSDL3 -lstdc++ -lSDL3_ttf
+// gcc *.cpp GUI/Elements/*.cpp GUI/Windows/*.cpp Entities/*.cpp  Entities/Pathfinding/*.cpp -o main -I "src\SDL_Lib\include" -I "src\TTF_Lib\include" -I "src\SDL_Image\include" -L "src\SDL_Lib\lib" -L "src\TTF_Lib\lib" -L "src\SDL_Image\lib" -lSDL3 -lstdc++ -lSDL3_ttf -lSDL3_image 
 
 #define SDL_MAIN_USE_CALLBACKS 1  /* use the callbacks instead of main() */
 #include <SDL3/SDL_main.h>
@@ -79,8 +79,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 /* This function runs once per frame, and is the heart of the program. */
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
-    menus.applyPendingRequest();
-
     DrawBackground(renderer);
 
     menus.GetMenu()->HandleGameLogic();
@@ -88,7 +86,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     menus.GetMenu()->DrawWindow();
 
     SDL_RenderPresent(renderer);
-    
+ 
+    menus.applyPendingRequest();
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 

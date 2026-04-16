@@ -12,9 +12,9 @@ void Enemy::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int
     SDL_RenderFillRect(renderer, &this->rect);
 }
 
-Enemy::Enemy(int x, int y, std::vector<std::vector<TileData>> *level):Entity{x,y}{
-    goalX = 18; 
-    goalY = 18;
-    this->level = level;
+Enemy::Enemy(int x, int y):Entity{x,y}{
+    goalX = x; 
+    goalY = y;
+    direction = Direction::Up;
     AI = BuildAI();
 }
