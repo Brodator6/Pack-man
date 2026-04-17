@@ -97,7 +97,7 @@ std::function<void()> GameWindow::ToMainMenu(){
 GameWindow::GameWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer) : GUI(menus, window, renderer){
     GenerateLevel();
 
-    enemies.push_back(Enemy(10, 10));
+    enemies.push_back(Enemy(10, 10, IMG_LoadTexture(*renderer, "./Assets/Sprites/testSprite.png")));
     shadowGrid.resize(rows * columns);
     UpdateShadowGrid();
 }

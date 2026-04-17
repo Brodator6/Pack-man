@@ -19,5 +19,5 @@ public:
 
     void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) override;
 
-    Enemy(int x, int y);
+    Enemy(int x, int y, SDL_Texture *tex);
 };
