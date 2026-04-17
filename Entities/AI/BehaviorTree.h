@@ -95,13 +95,12 @@ public:
             checkY += dy;
             
             if (checkX < 0 || checkX >= columns || checkY < 0 || checkY >= rows){ 
-                std::cout << "out of bound" << std:: endl;
                 break;// out of bounds?
             }
             if (!bb.level[checkY][checkX].isWalkable){ 
-                std::cout << "not walkable" << std:: endl;
                 break;// out of bounds?
             }
+
             for (int slot = 0; slot < 3; ++slot) {
                 if (bb.shadowGrid[checkY * 20 + checkX].entityIDs[slot] == 0) {
                     bb.enemy.goalX = checkX;
@@ -136,18 +135,13 @@ class MoveNode : public Node
 {
 public:
     NodeStatus Tick(Blackboard& bb) override {
-        if(bb.enemy.currentPath.empty()) return NodeStatus::FALURE;
-
-        int x = bb.enemy.currentPath.back().x;
-        int y = bb.enemy.currentPath.back().y;
-        bb.enemy.SetPosition(x, y);
-
-        bb.enemy.currentPath.pop_back();
-
-        if (!bb.enemy.currentPath.empty()) {
+        if (!bb.enemy.HasReachedNode()) {
             return NodeStatus::RUNNING;
         }
-        return NodeStatus::SUCCESS;
+        if (bb.enemy.currentPath.empty()) {
+            return NodeStatus::FALURE;
+        }
+        return NodeStatus::RUNNING;
     }
 };
 

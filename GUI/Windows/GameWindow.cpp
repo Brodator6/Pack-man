@@ -64,6 +64,8 @@ void GameWindow::HandleGameLogic(){
             for(auto &enemy : enemies){
                 Blackboard bb = {enemy, level, shadowGrid};
                 enemy.AI->Tick(bb);
+                enemy.UpdateMovement();
+                enemy.Move();
             }
             UpdateShadowGrid();
             accumulator -= deltaTime;
