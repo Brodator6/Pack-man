@@ -13,6 +13,10 @@ void Entity::SetPosition(int x, int y){
     yPosition = y;
 };
 
+void Entity::SetTexture(SDL_Texture *tex){
+    texture = tex;
+};
+
 Entity::Entity(int x, int y):xPosition{x}, yPosition{y}{
 
 }

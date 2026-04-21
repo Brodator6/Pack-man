@@ -1,10 +1,9 @@
 #include "Player.h"
 #include "../TileSystem.h"
+#include "EntityFactory.h"
 #include <cmath>
 
 //functions
-std::string Player::GetName() const{return name;}
-
 int Player::GetScore() const{return score;}
 
 void Player::AddScore(int extraPoints){score += extraPoints;}
@@ -85,6 +84,7 @@ void Player::UseAbility(){
         if(abilities[i].isConsumable) {abilities[i].charges--;}
         switch (abilities[i].type) {
             case AbilityType::Claymore:
+                // WENT TO WASH
                 std::cout << "Casting Fireball" << std::endl;
                 break;
             default:
@@ -114,16 +114,17 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
     SDL_RenderTextureRotated(renderer, texture, NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
-Player::Player(int x, int y, SDL_Texture *tex, std::string name, std::map<SDL_Scancode, bool> movement):Entity{x,y, tex}, name{name}, controls{controls}{
+Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> movement):Entity{x, y},  controls{controls}{
+    blackboard = bb;
     targetX = x;
     targetY = y;
     visualX = x;
     visualY = y;
 
-    abilities[AbilityID::permanentAbility1] = Ability{AbilityType::None, 0, 0, 0, false};
+    abilities[AbilityID::permanentAbility1] = {AbilityType::None, 0, 0, 0, false};
     abilities[AbilityID::permanentAbility2] = {AbilityType::Claymore, 0, 10, 0, false};
-    abilities[AbilityID::consumableAbility1] = {AbilityType::Claymore, 0, 0, 0, true};
-    abilities[AbilityID::consumableAbility2] = {AbilityType::Claymore, 0, 10, 1, true};
+    abilities[AbilityID::consumableAbility1] = {AbilityType::Claymore, 0, 100, 10, true};
+    abilities[AbilityID::consumableAbility2] = {AbilityType::Claymore, 0, 0, 0, false};
 
 }
 

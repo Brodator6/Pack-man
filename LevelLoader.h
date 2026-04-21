@@ -20,7 +20,7 @@ public:
             for (int i = 0; i < rows; ++i) {
                 level[i].resize(columns);
                 for (int j = 0; j < columns; ++j) {
-                    level[i][j] = TileDataFactory::CreateTile('F');
+                    level[i][j] = TileDataFactory::CreateTile('_');
                 }
             }
             return level;
@@ -36,7 +36,7 @@ public:
             }
             // Fill remaining columns with Floor if line is short
             for (int col = line.size(); col < columns; ++col) {
-                level[row][col] = TileDataFactory::CreateTile('F');
+                level[row][col] = TileDataFactory::CreateTile('_');
             }
             ++row;
         }
@@ -45,7 +45,7 @@ public:
         for (int i = row; i < rows; ++i) {
             level[i].resize(columns);
             for (int j = 0; j < columns; ++j) {
-                level[i][j] = TileDataFactory::CreateTile('F');
+                level[i][j] = TileDataFactory::CreateTile('_');
             }
         }
 

@@ -1,4 +1,9 @@
 #pragma once
+#include <vector>
+#include "TileData.h"
+
+class EntityManager;
+class EntityFactory;
 
 struct GridCell {
     int entityIDs[3];
@@ -15,3 +20,9 @@ struct GridCell {
     }
 };
 
+struct Blackboard {
+    int rows, columns;
+    std::vector<std::vector<TileData>> &level;
+    EntityManager &entityManager;
+    EntityFactory &entityFactory;
+};

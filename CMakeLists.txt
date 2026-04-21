@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.0)
-
+# use ninja -C build  from parent directory to compile the project
 project(Pac-Man LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,10 +40,14 @@ add_executable(Pac-Man
     GUI/Windows/ErrorWindow.cpp
     GUI/Elements/GUIElement.cpp
     GUI/Windows/GUI.h
+    Entities/AI/AIUtils.cpp
     Entities/Entity.cpp
     Entities/Player.cpp
     Entities/Enemy.cpp
     Entities/Pathfinding/Pathfinding.cpp
+    Entities/EntityManager.cpp
+    Entities/EntityFactory.h
+
 )
 
 target_include_directories(Pac-Man PRIVATE

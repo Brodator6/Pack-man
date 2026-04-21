@@ -3,7 +3,7 @@
 #include "./Pathfinding/Pathfinding.h"
 #include "./AI/BehaviorTree.h"
 
-bool Enemy::HasReachedNode() const {
+bool Enemy::HasReachedNode() {
     return visualX == float(xPosition) && visualY == float(yPosition);
 }
 
@@ -31,10 +31,9 @@ void Enemy::Move(){
     int dx = targetX - xPosition;
     int dy = targetY - yPosition;
 
-    float step = 0.2f * speedModifier;
-    float dirX = dx == 0 ? 0.0f : (dx > 0 ? 1.0f : -1.0f);
-    float dirY = dy == 0 ? 0.0f : (dy > 0 ? 1.0f : -1.0f);
-
+    float step = 0.2f * DinamicEntity.speedModifier;
+    float dirX = (direction == Direction::Right) - (direction == Direction::Left);
+    float dirY = (direction == Direction::Down) - (direction == Direction::Up);
     visualX += dirX * step;
     visualY += dirY * step;
 
@@ -62,12 +61,9 @@ void Enemy::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int
 }
 
 Enemy::Enemy(int x, int y, SDL_Texture *tex) : Entity{x,y, tex}{
-    goalX = x;
-    goalY = y;
     targetX = x;
     targetY = y;
     visualX = float(x);
     visualY = float(y);
     direction = Direction::Up;
-    AI = BuildAI();
 }

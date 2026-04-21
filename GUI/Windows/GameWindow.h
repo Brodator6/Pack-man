@@ -5,6 +5,8 @@
 #include "../../Entities/Enemy.h"
 #include "../../TileData.h"
 #include "../../DataStructs.h"
+#include "../../Entities/EntityManager.h"
+#include "../../Entities/EntityFactory.h"
 
 #include <chrono>
 #include <memory>
@@ -27,8 +29,6 @@ private:
     std::chrono::time_point<std::chrono::high_resolution_clock> currentTimeFrame = std::chrono::high_resolution_clock::now();
     bool isPaused = false;
 
-    int rows = 20;
-    int columns = 20;
     int cellWidth = 40;
     int cellHight = 40;
     int widthMargine = 40;
@@ -37,18 +37,22 @@ private:
 
     std::vector<std::vector<TileData>> level;
 
-    Player player = Player(8, 8, IMG_LoadTexture(*renderer, "./Assets/Sprites/testSprite.png"));//player test
-
-    std::vector<Enemy> enemies;
-
     static constexpr int kPlayerEntityID = 0;
     static constexpr int kEnemyEntityIdOffset = 1;
 
-    std::vector<GridCell> shadowGrid;
+    EntityFactory entityFactory = EntityFactory(*renderer);
+    EntityManager entityManager;
+
+    Blackboard bb = {
+        20, 20,
+        level,
+        entityManager,
+        entityFactory
+    };
+
 public:
 
-    void DrawWindow();
-    void UpdateShadowGrid();
+    void DrawWindow() override;
     Entity* GetEntityById(int entityID);
     const GridCell* GetGridCell(int x, int y) const;
     int GetShadowGridWidth() const;

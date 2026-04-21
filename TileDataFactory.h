@@ -7,11 +7,11 @@ class TileDataFactory {
 public:
     static TileData CreateTile(char type) {
         switch (type) {
-            case 'W':
+            case '#':
                 return {WALL, false, 0};
-            case 'F':
+            case '_':
                 return {FLOOR, true, 0};
-            case 'S':
+            case '*':
                 return {SMALL_REWARD, true, 10};
             default:
                 return {FLOOR, true, 0}; // default to floor

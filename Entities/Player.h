@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.h"
 #include "Abilities.h"
+#include "../DataStructs.h"
 #include <vector>
 
 struct TileData;
@@ -11,10 +12,9 @@ private:
     float speedModifier = 1;
     float visualX, visualY;
     int targetX, targetY;
+    Blackboard *blackboard;
 
-    std::string name;
     int score = 0;
-
     Ability abilities[4];
 
 public:
@@ -22,7 +22,6 @@ public:
 
     int GetScore() const;
     void AddScore(int extraPoints);
-    std::string GetName() const;
     void SetTargetPosition(int x, int y);
 
     bool HasReachedNode() const;
@@ -37,8 +36,8 @@ public:
 
     void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) override;
     
-    
-    Player(int x, int Y, SDL_Texture *tex,std::string name = "player", std::map<SDL_Scancode, bool> movement = {{SDL_SCANCODE_UP, false}, {SDL_SCANCODE_RIGHT, false}, {SDL_SCANCODE_DOWN, false}, {SDL_SCANCODE_LEFT, false}, {SDL_SCANCODE_1, true}, {SDL_SCANCODE_2, false}, {SDL_SCANCODE_3, false}, {SDL_SCANCODE_4, false}});
+    Player(){};
+    Player(int x, int Y, Blackboard *bb, std::map<SDL_Scancode, bool> movement = {{SDL_SCANCODE_UP, false}, {SDL_SCANCODE_RIGHT, false}, {SDL_SCANCODE_DOWN, false}, {SDL_SCANCODE_LEFT, false}, {SDL_SCANCODE_1, true}, {SDL_SCANCODE_2, false}, {SDL_SCANCODE_3, false}, {SDL_SCANCODE_4, false}});
     ~Player();
 
 };

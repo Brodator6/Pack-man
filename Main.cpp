@@ -30,6 +30,7 @@ int squareSize = 40;
 /* This function runs once at startup. */
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
+    srand(static_cast<unsigned int>(time(0)));
 
     //std::ifstream file("./Assets/Levels/level1.txt");
     //std::cout << file.is_open() << std::endl;

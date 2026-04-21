@@ -6,11 +6,11 @@
 
 #include <iostream>
 
-enum class Direction{
-    Left,
-    Up,
-    Right,
-    Down
+enum Direction{
+    Left = 0,
+    Up = 1,
+    Right = 2,
+    Down = 3
 };
 
 class Entity
@@ -26,9 +26,11 @@ public:
     int GetPositionX() const;
     int GetPositionY() const;
     void SetPosition(int X, int Y);
+    void SetTexture(SDL_Texture *tex);
     
     virtual void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) = 0;
     
+    Entity(){};
     Entity(int x, int y);
     Entity(int x, int y, SDL_Texture *tex);
     ~Entity() = default;
