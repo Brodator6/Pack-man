@@ -1,13 +1,13 @@
-#include "Enemy.h"
+#include "Actor.h"
 #include <cmath>
 #include "./Pathfinding/Pathfinding.h"
 #include "./AI/BehaviorTree.h"
 
-bool Enemy::HasReachedNode() {
+bool Actor::HasReachedNode() {
     return visualX == float(xPosition) && visualY == float(yPosition);
 }
 
-void Enemy::SetTargetPosition(int x, int y){
+void Actor::SetTargetPosition(int x, int y){
     targetX = x;
     targetY = y;
     int dx = targetX - xPosition;
@@ -19,7 +19,7 @@ void Enemy::SetTargetPosition(int x, int y){
     else if (dy < 0) direction = Direction::Up;
 }
 
-void Enemy::UpdateMovement(){
+void Actor::UpdateMovement(){
     if (HasReachedNode() && !currentPath.empty()){
         auto nextNode = currentPath.back();
         currentPath.pop_back();
@@ -27,7 +27,7 @@ void Enemy::UpdateMovement(){
     }
 }
 
-void Enemy::Move(){
+void Actor::Move(){
     int dx = targetX - xPosition;
     int dy = targetY - yPosition;
 
@@ -50,7 +50,7 @@ void Enemy::Move(){
     }
 }
 
-void Enemy::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
+void Actor::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
     this->rect.x = hightMargine + visualX * cellHight + 5;
     this->rect.y = widthMargine + visualY * cellWidth + 5;
     this->rect.w = squareSize - 10;
@@ -60,7 +60,7 @@ void Enemy::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int
     SDL_RenderTextureRotated(renderer, texture, NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
-Enemy::Enemy(int x, int y, SDL_Texture *tex) : Entity{x,y, tex}{
+Actor::Actor(int x, int y, SDL_Texture *tex) : Entity{x,y, tex}{
     targetX = x;
     targetY = y;
     visualX = float(x);

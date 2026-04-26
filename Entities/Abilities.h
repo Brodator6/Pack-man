@@ -5,7 +5,9 @@ enum class AbilityType{
     None,
     Claymore,
     WallCharge,
-    RoadBlocker
+    RoadBlocker,
+    SpeedBoost,
+    Invisibility
 };
 
 enum AbilityID{
@@ -18,7 +20,9 @@ enum AbilityID{
 struct Ability{
     AbilityType type;
     float cooldownRemaining;
-    float maxCooldown;
+    float cooldownDuration;
+    float durationRemaining;
+    float duration;
     int charges;
     bool isConsumable;
 };

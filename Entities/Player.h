@@ -14,10 +14,11 @@ private:
     int targetX, targetY;
     Blackboard *blackboard;
 
-    int score = 0;
     Ability abilities[4];
 
 public:
+    int ID = 0;
+    int score = 0;
     std::map<SDL_Scancode, bool> controls;
 
     int GetScore() const;
@@ -37,7 +38,7 @@ public:
     void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) override;
     
     Player(){};
-    Player(int x, int Y, Blackboard *bb, std::map<SDL_Scancode, bool> movement = {{SDL_SCANCODE_UP, false}, {SDL_SCANCODE_RIGHT, false}, {SDL_SCANCODE_DOWN, false}, {SDL_SCANCODE_LEFT, false}, {SDL_SCANCODE_1, true}, {SDL_SCANCODE_2, false}, {SDL_SCANCODE_3, false}, {SDL_SCANCODE_4, false}});
+    Player(int x, int Y, Blackboard *bb, std::map<SDL_Scancode, bool> movement = {{SDL_SCANCODE_UP, false}, {SDL_SCANCODE_RIGHT, false}, {SDL_SCANCODE_DOWN, false}, {SDL_SCANCODE_LEFT, false}, {SDL_SCANCODE_1, false}, {SDL_SCANCODE_2, false}, {SDL_SCANCODE_3, false}, {SDL_SCANCODE_4, false}});
     ~Player();
 
 };

@@ -7,7 +7,7 @@
 
 #include "AIUtils.h"
 #include "../Pathfinding/Pathfinding.h"
-#include "../Enemy.h"
+#include "../Actor.h"
 #include "../../DataStructs.h"
 #include "../EntityManager.h"
 
@@ -20,7 +20,7 @@ enum NodeStatus{
 class Node
 {
 public:
-    virtual NodeStatus Tick(Enemy &enemy, Blackboard& bb) = 0;
+    virtual NodeStatus Tick(Actor &actor, Blackboard& bb) = 0;
     virtual void Reset(){};
     virtual ~Node() = default;
 };
@@ -46,9 +46,9 @@ public:
 class SequenceNode : public CompositeNode
 {
 public:
-    NodeStatus Tick(Enemy &enemy, Blackboard& bb) override {
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
         for (auto& child : childNodes) {
-            NodeStatus status = child->Tick(enemy, bb);
+            NodeStatus status = child->Tick(actor, bb);
 
             if (status == NodeStatus::FAILURE){
                 Reset();
@@ -63,9 +63,9 @@ public:
 class SelectorNode : public CompositeNode
 {
 public:
-    NodeStatus Tick(Enemy &enemy, Blackboard& bb) override {
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
         for (auto& child : childNodes) {
-            NodeStatus status = child->Tick(enemy, bb);
+            NodeStatus status = child->Tick(actor, bb);
             
             if (status == NodeStatus::SUCCESS){
                 Reset();
@@ -80,12 +80,12 @@ public:
 class FindTarget : public Node
 {
 public:
-    NodeStatus Tick(Enemy &enemy, Blackboard& bb) override {
-        int dirX =  (enemy.direction == Direction::Right) - (enemy.direction == Direction::Left);
-        int dirY = (enemy.direction == Direction::Down) - (enemy.direction == Direction::Up);
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        int dirX =  (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
+        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
 
-        int checkX = enemy.GetPositionX();
-        int checkY = enemy.GetPositionY();
+        int checkX = actor.GetPositionX();
+        int checkY = actor.GetPositionY();
 
         while (true) {//check till first wall
             checkX += dirX;
@@ -100,14 +100,14 @@ public:
 
             for (int slot = 0; slot < 3; ++slot) {
                 if (bb.entityManager.shadowGrid[checkY * bb.columns + checkX].entityIDs[slot] == 0) {
-                    enemy.DinamicEntity.goalX = checkX;
-                    enemy.DinamicEntity.goalY = checkY;
-                    enemy.DinamicEntity.LastSeenPlayerX = checkX;
-                    enemy.DinamicEntity.LastSeenPlayerY = checkY;
-                    if(!enemy.DinamicEntity.isChasing){
+                    actor.DinamicEntity.goalX = checkX;
+                    actor.DinamicEntity.goalY = checkY;
+                    actor.DinamicEntity.LastSeenPlayerX = checkX;
+                    actor.DinamicEntity.LastSeenPlayerY = checkY;
+                    if(!actor.DinamicEntity.isChasing){
                         std::cout << "chasing player" << std::endl;
                     }
-                    enemy.DinamicEntity.isChasing = true;
+                    actor.DinamicEntity.isChasing = true;
                     return NodeStatus::SUCCESS;
                 }
             }
@@ -119,16 +119,16 @@ public:
 class FindPathNode : public Node
 {
 public:
-    NodeStatus Tick(Enemy &enemy, Blackboard& bb) override {
-        if(!enemy.currentPath.empty()) return NodeStatus::FAILURE;
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        if(!actor.currentPath.empty()) return NodeStatus::FAILURE;
         Grid gameGrid;
         gameGrid = Grid::GenerateGrid(&bb.level);
 
-        int dirX = (enemy.direction == Direction::Right) - (enemy.direction == Direction::Left);
-        int dirY = (enemy.direction == Direction::Down) - (enemy.direction == Direction::Up);
+        int dirX = (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
+        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
 
         APAthFinding pathFinding;
-        enemy.currentPath = pathFinding.FindPath({enemy.GetPositionX() + dirX, enemy.GetPositionY() + dirY}, {enemy.DinamicEntity.goalX, enemy.DinamicEntity.goalY}, &gameGrid);
+        actor.currentPath = pathFinding.FindPath({actor.GetPositionX() + dirX, actor.GetPositionY() + dirY}, {actor.DinamicEntity.goalX, actor.DinamicEntity.goalY}, &gameGrid);
         
         return NodeStatus::SUCCESS;
     }
@@ -148,18 +148,18 @@ private:
     } Weights;
 
 public:
-    NodeStatus Tick(Enemy &enemy, Blackboard& bb) override {
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
         // 1. If already moving, don't pick a new direction
 
-        int x = enemy.GetPositionX();
-        int y = enemy.GetPositionY();
+        int x = actor.GetPositionX();
+        int y = actor.GetPositionY();
         
         // Calculate current forward vector
-        int dirX = (enemy.direction == Direction::Right) - (enemy.direction == Direction::Left);
-        int dirY = (enemy.direction == Direction::Down) - (enemy.direction == Direction::Up);
+        int dirX = (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
+        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
 
         // This is your specific logic: If there's a side-path available...
-        if (enemy.HasReachedNode() && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !enemy.DinamicEntity.isChasing) {
+        if (actor.HasReachedNode() && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !actor.DinamicEntity.isChasing) {
             std::cout << "turn?" << std::endl;
             const std::pair<int, int> dirs[4] = {{0,-1}, {1,0}, {0,1}, {-1,0}};
 
@@ -200,23 +200,23 @@ public:
             }
 
             // 3. Apply results
-            enemy.DinamicEntity.goalX = selection.first;
-            enemy.DinamicEntity.goalY = selection.second;
-            enemy.currentPath = {{selection.first, selection.second, true}};
-            //enemy.currentPath.push_back({selection.first, selection.second, true});
+            actor.DinamicEntity.goalX = selection.first;
+            actor.DinamicEntity.goalY = selection.second;
+            actor.currentPath = {{selection.first, selection.second, true}};
+            //actor.currentPath.push_back({selection.first, selection.second, true});
             return NodeStatus::SUCCESS;
         }
         
         if(!bb.level[y + dirY][x + dirX].isWalkable){
-            enemy.direction = static_cast<Direction>((enemy.direction + 2) % 4);
+            actor.direction = static_cast<Direction>((actor.direction + 2) % 4);
             dirX *=-1;
             dirY *= -1;
         }
 
-        if(enemy.currentPath.empty()){
-            enemy.currentPath = {{x + dirX, y + dirY, true}};
+        if(actor.currentPath.empty()){
+            actor.currentPath = {{x + dirX, y + dirY, true}};
             return NodeStatus::SUCCESS;   
-            //enemy.currentPath = AIUtils::GetPathToNextWalkableTile(bb, enemy, dirX, dirY);
+            //actor.currentPath = AIUtils::GetPathToNextWalkableTile(bb, actor, dirX, dirY);
         }
         return NodeStatus::FAILURE;
     }
@@ -231,13 +231,161 @@ public:
 class PredictPlayersTurn : public Node
 {
 public:
-    NodeStatus Tick(Enemy &enemy, Blackboard& bb) override {
-        if(enemy.HasReachedNode() && enemy.GetPositionX() == enemy.DinamicEntity.LastSeenPlayerX && enemy.GetPositionY() == enemy.DinamicEntity.LastSeenPlayerY && enemy.DinamicEntity.isChasing){
-            enemy.DinamicEntity.LastSeenPlayerX = -1;
-            enemy.DinamicEntity.LastSeenPlayerY = -1;
-            enemy.DinamicEntity.isChasing = false;
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        if(actor.HasReachedNode() && actor.GetPositionX() == actor.DinamicEntity.LastSeenPlayerX && actor.GetPositionY() == actor.DinamicEntity.LastSeenPlayerY && actor.DinamicEntity.isChasing){
+            actor.DinamicEntity.LastSeenPlayerX = -1;
+            actor.DinamicEntity.LastSeenPlayerY = -1;
+            actor.DinamicEntity.isChasing = false;
             return NodeStatus::SUCCESS;
         }
+        return NodeStatus::FAILURE;
+    }
+};
+//needs reviewing
+
+class ClaymoreTriggerNode : public Node
+{
+public:
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        int dirX = (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
+        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
+        int checkX = actor.GetPositionX() + dirX;
+        int checkY = actor.GetPositionY() + dirY;
+
+        if (checkX < 0 || checkX >= bb.columns || checkY < 0 || checkY >= bb.rows) {
+            return NodeStatus::FAILURE;
+        }
+
+        const GridCell* cell = bb.entityManager.GetGridCell(checkX, checkY);
+        if (cell == nullptr) {
+            return NodeStatus::FAILURE;
+        }
+
+        std::vector<int> toRemove;
+        for (int slot = 0; slot < 3; ++slot) {
+            int id = cell->entityIDs[slot];
+            if (id > bb.entityManager.GetPlayer().ID && bb.entityManager.GetEntityById(id)->actorType == ActorType::DinamicActor) {
+                toRemove.push_back(id);
+            }
+        }
+
+        if (toRemove.empty()) {
+            return NodeStatus::FAILURE;
+        }
+
+        for (int id : toRemove) {
+            bb.entityManager.RequestRemoveEntityByID(id);
+        }
+        bb.entityManager.RequestRemoveEntityByID(actor.entityID);
+
+        return NodeStatus::SUCCESS;
+    }
+};
+
+class WallChargeDetonateNode : public Node
+{
+public:
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        if (actor.StaticEntity.timer > 0) {
+            actor.StaticEntity.timer -= 1;
+            return NodeStatus::RUNNING;
+        }
+
+        int originX = actor.GetPositionX();
+        int originY = actor.GetPositionY();
+
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                int x = originX + dx;
+                int y = originY + dy;
+                if (x < 0 || x >= bb.columns || y < 0 || y >= bb.rows) {
+                    continue;
+                }
+                const GridCell* cell = bb.entityManager.GetGridCell(x, y);
+                if (cell == nullptr) {
+                    continue;
+                }
+                std::vector<int> toRemove;
+                for (int slot = 0; slot < 3; ++slot) {
+                    int id = cell->entityIDs[slot];
+                    if (id >= 0 && id != actor.entityID) {
+                        toRemove.push_back(id);
+                    }
+                }
+                for (int id : toRemove) {
+                    bb.entityManager.RequestRemoveEntityByID(id);
+                }
+            }
+        }
+
+        if (originX >= 0 && originX < bb.columns && originY >= 0 && originY < bb.rows) {
+            bb.level[originY][originX].type = FLOOR;
+            bb.level[originY][originX].isWalkable = true;
+        }
+
+        if (actor.entityID >= 0) {
+            bb.entityManager.RequestRemoveEntityByID(actor.entityID);
+        }
+
+        return NodeStatus::SUCCESS;
+    }
+};
+
+//NEEDS CHECKING AND REWORKING
+
+// ============================================================================
+// SHARED TARGET INFORMATION NODES (For AdvancedEnemy and CommandoEnemy)
+// ============================================================================
+
+/// ShareTargetInformationNode
+/// This node implements cooperative target sharing for advanced enemy types.
+/// It allows enemies to communicate the player's last known location.
+/// Extensible for CommandoType where one enemy can act as commander.
+class ShareTargetInformationNode : public Node
+{
+private:
+    int tickCounter = 0;
+    
+public:
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        tickCounter++;
+        
+        // Check if this enemy has visual on the player
+        if (actor.DinamicEntity.isChasing) {
+            actor.advancedEnemyBB->ShareTargetInformation(
+            actor.entityID,
+            actor.DinamicEntity.LastSeenPlayerX,
+            actor.DinamicEntity.LastSeenPlayerY,
+            tickCounter);
+            return NodeStatus::SUCCESS;
+        }
+        
+        return NodeStatus::FAILURE;
+    }
+};
+
+/// UseSharedTargetInformationNode
+/// This node allows advanced enemies to use target information shared by teammates.
+/// If this enemy hasn't spotted the player but a teammate has, it uses that information.
+class UseSharedTargetInformationNode : public Node
+{
+public:
+    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+        // Only use shared information if not already chasing
+        if (!actor.DinamicEntity.isChasing) {
+            SharedTargetInfo target = actor.advancedEnemyBB->GetLatestSharedTarget();
+            
+            // If teammates have spotted the player, use that information
+            if (target.lastSeenX >= 0 && target.lastSeenY >= 0) {
+                actor.DinamicEntity.goalX = target.lastSeenX;
+                actor.DinamicEntity.goalY = target.lastSeenY;
+                actor.DinamicEntity.LastSeenPlayerX = target.lastSeenX;
+                actor.DinamicEntity.LastSeenPlayerY = target.lastSeenY;
+                actor.DinamicEntity.isChasing = true;
+                return NodeStatus::SUCCESS;
+            }
+        }
+        
         return NodeStatus::FAILURE;
     }
 };

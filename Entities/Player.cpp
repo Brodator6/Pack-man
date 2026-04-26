@@ -40,13 +40,8 @@ void Player::UpdateMovement(std::vector<std::vector<TileData>> &level, int rows,
 }
 
 void Player::Move(){
-    /*
-    visualX = visualX + 0.2 *(targetX - xPosition) * speedModifier;
-    visualY = visualY + 0.2 *(targetY - yPosition) * speedModifier;
-
-    xPosition += (targetX - xPosition) * (std::abs((float)(visualX - targetX)) < 0.1);
-    yPosition += (targetY - yPosition) * (std::abs((float)(visualY - targetY)) < 0.1);
-    */
+    int originalX = xPosition;
+    int originalY = yPosition;
 
     int dx = targetX - xPosition;
     int dy = targetY - yPosition;
@@ -69,28 +64,87 @@ void Player::Move(){
         visualY = float(targetY);
         yPosition = targetY;
     }
+
+    if (ID == -1 && (xPosition != originalX || yPosition != originalY)) {
+        ID = 0;
+    }
 }
 
 void Player::UseAbility(){
     for(int i = 0; i < 4; i++){
-        if(abilities[i].cooldownRemaining < 0.1f && !controls[(SDL_Scancode)(i + SDL_SCANCODE_1)]) {continue;}
-        if (abilities[i].isConsumable && abilities[i].charges <= 0) {
-            abilities[i] = {AbilityType::None, 0, 0, 0, false}; 
+        Ability &ability = abilities[i];
+        SDL_Scancode key = static_cast<SDL_Scancode>(SDL_SCANCODE_1 + i);
+        if(!controls[key]) continue;
+        if(ability.cooldownRemaining > 0.0f) continue;
+        if(ability.isConsumable && ability.charges <= 0){
+            ability.type = AbilityType::None;
+            ability.isConsumable = false;
+            continue;
+        }
+        if((ability.type == AbilityType::SpeedBoost || ability.type == AbilityType::Invisibility) && ability.durationRemaining > 0.0f){
             continue;
         }
 
-        abilities[i].maxCooldown = abilities[i].cooldownRemaining;
+        int dirX = (direction == Direction::Right) - (direction == Direction::Left);
+        int dirY = (direction == Direction::Down) - (direction == Direction::Up);
+        int frontX = this->GetPositionX() + dirX;
+        int frontY = this->GetPositionY() + dirY;
+        bool used = false;
 
-        if(abilities[i].isConsumable) {abilities[i].charges--;}
-        switch (abilities[i].type) {
-            case AbilityType::Claymore:
-                // WENT TO WASH
-                std::cout << "Casting Fireball" << std::endl;
+        switch (ability.type) {
+            case AbilityType::Claymore: {
+                Actor claymore = blackboard->entityFactory.CreateStaticEntity(this->GetPositionX() + dirX, this->GetPositionY() + dirY, direction, EntityType::Claymore);
+                blackboard->entityManager.RequestAddEnemy(std::move(claymore));
+                used = true;
                 break;
+            }
+            case AbilityType::WallCharge: {
+                if(frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && !blackboard->level[frontY][frontX].isWalkable){
+                    Actor charge = blackboard->entityFactory.CreateStaticEntity(frontX, frontY, direction, EntityType::WallCharge);
+                    blackboard->entityManager.RequestAddEnemy(std::move(charge));
+                    used = true;
+                }
+                break;
+            }
+            case AbilityType::RoadBlocker: {
+                if(frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && blackboard->level[frontY][frontX].isWalkable){
+                    blackboard->level[frontY][frontX].type = WALL;
+                    blackboard->level[frontY][frontX].isWalkable = false;
+                    used = true;
+                }
+                break;
+            }
+            case AbilityType::SpeedBoost: {
+                speedModifier = 2.0f;
+                ability.durationRemaining = ability.duration;
+                used = true;
+                break;
+            }
+            case AbilityType::Invisibility: {
+                if(this->ID != -1){
+                    this->ID = -1;
+                    ability.durationRemaining = ability.duration;
+                    used = true;
+                }
+                break;
+            }
             default:
-                std::cout << "Unidentified behavior" << std::endl;
                 break;
         }
+
+        if(!used) continue;
+
+        if(ability.isConsumable){
+            ability.charges--;
+            if(ability.charges <= 0){
+                ability.type = AbilityType::None;
+                ability.cooldownDuration = 0;
+                ability.cooldownRemaining = 0;
+                ability.isConsumable = false;
+            }
+        }
+
+        ability.cooldownRemaining = ability.cooldownDuration;
     }
 }
 
@@ -98,8 +152,28 @@ void Player::UpdateAbilitiesCooldown(float deltaTime){
     for(auto &ability : abilities){
         if(ability.cooldownRemaining > 0.0f){
             ability.cooldownRemaining -= deltaTime;
-        }else{
-            ability.cooldownRemaining = 0;
+            if(ability.cooldownRemaining < 0.0f){
+                ability.cooldownRemaining = 0.0f;
+            }
+        }
+
+        if(ability.durationRemaining > 0.0f){
+            ability.durationRemaining -= deltaTime;
+            if(ability.durationRemaining <= 0.0f){
+                ability.durationRemaining = 0.0f;
+                switch(ability.type){
+                    case AbilityType::SpeedBoost:
+                        speedModifier = 1.0f;
+                        break;
+                    case AbilityType::Invisibility:
+                        if(ID == -1){
+                            ID = 0;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
         }
     }
 }
@@ -114,17 +188,17 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
     SDL_RenderTextureRotated(renderer, texture, NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
-Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> movement):Entity{x, y},  controls{controls}{
-    blackboard = bb;
+Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> movement):Entity{x, y}, blackboard{bb}, controls{movement} {
+    actorType = ActorType::DinamicActor;
     targetX = x;
     targetY = y;
     visualX = x;
     visualY = y;
 
-    abilities[AbilityID::permanentAbility1] = {AbilityType::None, 0, 0, 0, false};
-    abilities[AbilityID::permanentAbility2] = {AbilityType::Claymore, 0, 10, 0, false};
-    abilities[AbilityID::consumableAbility1] = {AbilityType::Claymore, 0, 100, 10, true};
-    abilities[AbilityID::consumableAbility2] = {AbilityType::Claymore, 0, 0, 0, false};
+    abilities[AbilityID::permanentAbility1] = {AbilityType::SpeedBoost, 0.0f, 10.0f, 0.0f, 3.0f, 0, false};
+    abilities[AbilityID::permanentAbility2] = {AbilityType::Invisibility, 0.0f, 15.0f, 0.0f, 5.0f, 0, false};
+    abilities[AbilityID::consumableAbility1] = {AbilityType::Claymore, 0.0f, 4.0f, 0.0f, 0.0f, 3, true};
+    abilities[AbilityID::consumableAbility2] = {AbilityType::WallCharge, 0.0f, 6.0f, 0.0f, 0.0f, 2, true};
 
 }
 

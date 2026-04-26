@@ -35,15 +35,15 @@ add_executable(Pac-Man
     Main.cpp
     TileSystem.cpp
     UpdateInput.cpp
-    GUI/Windows/MainMenuWindow.cpp
-    GUI/Windows/GameWindow.cpp
-    GUI/Windows/ErrorWindow.cpp
+    GUI/Windows/MainMenu.cpp
+    GUI/Windows/GameMenu.cpp
+    GUI/Windows/PauseMenu.cpp
     GUI/Elements/GUIElement.cpp
     GUI/Windows/GUI.h
     Entities/AI/AIUtils.cpp
     Entities/Entity.cpp
     Entities/Player.cpp
-    Entities/Enemy.cpp
+    Entities/Actor.cpp
     Entities/Pathfinding/Pathfinding.cpp
     Entities/EntityManager.cpp
     Entities/EntityFactory.h

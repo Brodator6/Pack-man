@@ -8,7 +8,7 @@
 
 #include "GUI/Windows/GUI.h"
 #include "GUI/Windows/MenuManager.h"
-#include "GUI/Windows/MainMenuWindow.h"
+#include "GUI/Windows/MainMenu.h"
 #include "./Entities/Entity.h"
 
 /* We will use this renderer to draw into this window every frame. */
@@ -37,12 +37,12 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_SetAppMetadata("Example Renderer Primitives", "0.3", "Puck-man");
 
-    if (!TTF_Init()) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_Init(SDL_INIT_VIDEO)) {
+    if (!TTF_Init()) {
         SDL_Log("Couldn't initialize SDL: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
@@ -55,7 +55,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 
     SDL_SetWindowTitle(window, "sas");
 
-    menus.PushMenu(std::make_unique<MainMenuWindow>(&menus, &window, &renderer));
+    menus.PushMenu(std::make_unique<MainMenu>(&menus, &window, &renderer));
 
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
@@ -97,9 +97,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 void SDL_AppQuit(void *appstate, SDL_AppResult result)
 {
     SDL_DestroyRenderer(renderer);
-    SDL_DestroyRenderer(renderer);
     SDL_QuitSubSystem(SDL_INIT_VIDEO);
     TTF_Quit();
-    SDL_Quit();
+    std::cout << "end of the program" << std::endl;
     /* SDL will clean up the window/renderer for us. */
 }

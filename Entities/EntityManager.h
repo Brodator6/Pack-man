@@ -1,5 +1,5 @@
 #pragma once
-#include "Enemy.h"
+#include "Actor.h"
 #include "Player.h"
 #include "../DataStructs.h"
 
@@ -10,19 +10,29 @@ class EntityManager
 private:
     Player player = Player();
     Blackboard *bb;
+    AdvancedEnemyBlackboard advancedEnemyBlackboard;
+    CommandoEnemyBlackboard commandoEnemyBlackboard;
+    
+    std::vector<int> removalQueue = {};
 
-    static constexpr int kPlayerEntityID = 0;
     static constexpr int kEnemyEntityIdOffset = 1;
 public:
     std::vector<GridCell> shadowGrid;
-    std::vector<Enemy> enemies;
+    std::vector<Actor> enemies;
     
     void UpdateShadowGrid();
     Entity* GetEntityById(int entityID);
     const GridCell* GetGridCell(int x, int y) const;
     
-    void AddEnemy();
-    void SetPlayer();
+    void RequestAddEnemy(Actor newEnemy);
+    void SetPlayer(Player newPlayer);
+    void RequestRemoveEntityByID(int entityID);
+
+    void UpdateState();
+
+    // Get the appropriate blackboard for an enemy
+    AdvancedEnemyBlackboard& GetAdvancedEnemyBlackboard() { return advancedEnemyBlackboard; }
+    CommandoEnemyBlackboard& GetCommandoEnemyBlackboard() { return commandoEnemyBlackboard; }
 
     Player& GetPlayer(){return player;};
     EntityManager();

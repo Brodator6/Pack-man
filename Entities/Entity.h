@@ -6,6 +6,12 @@
 
 #include <iostream>
 
+enum class ActorType{
+    DinamicActor,
+    StaticActor,
+    None
+};
+
 enum Direction{
     Left = 0,
     Up = 1,
@@ -22,6 +28,7 @@ protected:
     SDL_Texture *texture;
 
 public:
+    ActorType actorType = ActorType::None;
     Direction direction;
     int GetPositionX() const;
     int GetPositionY() const;

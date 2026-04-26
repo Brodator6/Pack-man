@@ -1,8 +1,8 @@
 #pragma once
 #include "GUI.h"
-#include "MainMenuWindow.h"
+#include "MainMenu.h"
 #include "../../Entities/Player.h"
-#include "../../Entities/Enemy.h"
+#include "../../Entities/Actor.h"
 #include "../../TileData.h"
 #include "../../DataStructs.h"
 #include "../../Entities/EntityManager.h"
@@ -19,7 +19,7 @@ class MainMenuWindow;
 class Tile;
 
 
-class GameWindow : public GUI{
+class GameMenu : public GUI{
 private:
     //data to manage game loop
     std::chrono::duration<double> deltaTime = std::chrono::duration<float>(1.0/10.0);
@@ -37,9 +37,6 @@ private:
 
     std::vector<std::vector<TileData>> level;
 
-    static constexpr int kPlayerEntityID = 0;
-    static constexpr int kEnemyEntityIdOffset = 1;
-
     EntityFactory entityFactory = EntityFactory(*renderer);
     EntityManager entityManager;
 
@@ -53,12 +50,8 @@ private:
 public:
 
     void DrawWindow() override;
-    Entity* GetEntityById(int entityID);
-    const GridCell* GetGridCell(int x, int y) const;
-    int GetShadowGridWidth() const;
-    int GetShadowGridHeight() const;
 
-    SDL_AppResult HandleEvents(SDL_Event *Event);
+    SDL_AppResult HandleEvents(SDL_Event *Event) override;
 
     void HandleGameLogic() override;
 
@@ -68,6 +61,6 @@ public:
 
     std::function<void()> ToMainMenu();
 
-    GameWindow(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer);
-    ~GameWindow();
+    GameMenu(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer);
+    ~GameMenu();
 };

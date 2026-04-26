@@ -37,11 +37,8 @@ public:
 
     virtual SDL_AppResult HandleEvents(SDL_Event *Event) = 0;
 
-    virtual  void HandleGameLogic(){
-
-    }
-
-
+    virtual  void HandleGameLogic(){};
+    
     std::function<void()> BackToPreviousMenu(){
         return [this](){
             if(!menus->IsEmpty()){

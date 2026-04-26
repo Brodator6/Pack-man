@@ -4,7 +4,7 @@
 #include <Cmath>
 #include <iostream>
 #include "../../TileSystem.h"
-#include "../../Entities/Enemy.h"
+#include "../../Entities/Actor.h"
 
 //class forwarding
 class Grid;

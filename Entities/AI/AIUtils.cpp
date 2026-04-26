@@ -2,9 +2,9 @@
 
 namespace AIUtils
 {
-    std::vector<Cell> GetPathToNearestWall(Blackboard &bb, Enemy &enemy, int dirX, int dirY){
-        int checkX = enemy.GetPositionX();
-        int checkY = enemy.GetPositionY();
+    std::vector<Cell> GetPathToNearestWall(Blackboard &bb, Actor &actor, int dirX, int dirY){
+        int checkX = actor.GetPositionX();
+        int checkY = actor.GetPositionY();
         std::vector<Cell> pathToWall = {};
         while (true) {//check till first wall
             checkX += dirX;
@@ -17,9 +17,9 @@ namespace AIUtils
         return pathToWall;
     }
 
-    std::vector<Cell> GetPathToNextWalkableTile(Blackboard &bb, Enemy &enemy, int dirX, int dirY){
-        int checkX = enemy.GetPositionX();
-        int checkY = enemy.GetPositionY();
+    std::vector<Cell> GetPathToNextWalkableTile(Blackboard &bb, Actor &actor, int dirX, int dirY){
+        int checkX = actor.GetPositionX();
+        int checkY = actor.GetPositionY();
         std::vector<Cell> pathToWall = {};
         
         if (checkX < 0 || checkX >= bb.columns || checkY < 0 || checkY >= bb.rows){return pathToWall;/* out of bounds?*/}
