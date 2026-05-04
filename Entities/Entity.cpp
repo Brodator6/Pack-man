@@ -13,7 +13,7 @@ void Entity::SetPosition(int x, int y){
     yPosition = y;
 };
 
-void Entity::SetTexture(SDL_Texture *tex){
+void Entity::SetTexture(const std::shared_ptr<SDL_Texture> &tex){
     texture = tex;
 };
 
@@ -21,6 +21,6 @@ Entity::Entity(int x, int y):xPosition{x}, yPosition{y}{
 
 }
 
-Entity::Entity(int x, int y, SDL_Texture *tex):xPosition{x}, yPosition{y}, texture{tex}{
+Entity::Entity(int x, int y, std::shared_ptr<SDL_Texture> tex):xPosition{x}, yPosition{y}, texture{std::move(tex)}{
 
 }

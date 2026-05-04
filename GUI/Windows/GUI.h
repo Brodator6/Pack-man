@@ -13,16 +13,16 @@
 #include "MenuManager.h"
 #include "../Elements/GUIElement.h"
 #include "../Elements/Button.h"
-
+#include "../../DataStructs.h"
 
 class GUI
 {
 protected:
     //window related data 
-    SDL_Window **window = NULL;
-    SDL_Renderer **renderer = NULL;
     MenuManager *menus;
+    MenuBlackboard &menuBlackboard;
 
+    TimeBlackboard &timeBlackboard;
 
     //centralized data for checkbox focusing detection
     int inactiveTextBoxCounter = 0;
@@ -33,9 +33,9 @@ protected:
 
 
 public:
-    virtual void DrawWindow() = 0;
+    virtual void DrawWindow(){};
 
-    virtual SDL_AppResult HandleEvents(SDL_Event *Event) = 0;
+    virtual SDL_AppResult HandleEvents(SDL_Event *Event){};
 
     virtual  void HandleGameLogic(){};
     
@@ -47,14 +47,11 @@ public:
         };
     }
     
-    GUI(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer){
+    GUI(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : menuBlackboard{mBB}, timeBlackboard{tBB}{
         this->menus = menus;
-        this->window = window;
-        this->renderer = renderer;
     }
 
     ~GUI(){
-        std::cout << "Menu deconstructed" << std::endl;
         TTF_CloseFont(font);
     }
 };

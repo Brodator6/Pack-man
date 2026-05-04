@@ -1,9 +1,8 @@
 #pragma once
 #include "GUIElement.h"
 
-class Button : GUIElement{//class for GUIElements that will perform action on click
+class Button : public GUIElement{//class for GUIElements that will perform action on click
 private:
-    std::string text = "";
     int darkening = 0;
     std::function<void()>functionPointer;
 
@@ -12,7 +11,7 @@ public:
     void DrawElement(SDL_Renderer *renderer){//function to display element
         SDL_SetRenderDrawColor(renderer, elementColor.r + darkening, elementColor.g + darkening, elementColor.b + darkening, elementColor.a);
         SDL_RenderFillRect(renderer, &rect);
-        SDL_RenderTexture(renderer, textTexture, NULL, &textRect);
+        SDL_RenderTexture(renderer, texture.get(), NULL, &textureRect);
     };
 
     void HandleKey(SDL_Event &Event){//function to handle element event
@@ -28,12 +27,15 @@ public:
         }
     }
 
-    Button(int x, int y, int w, int h, std::function<void()> function, std::string text, TTF_Font *font, SDL_Color *textColor, SDL_Renderer *renderer) : GUIElement(x, y, w, h){
-        this->text = text;
-        this->font = font;
-        this->textColor= textColor;
+    Button(int x, int y, int w, int h, std::function<void()> function, const std::string &text, TTF_Font *font, const SDL_Color &textColor, SDL_Renderer *renderer) : GUIElement(x, y, w, h){
         this->renderer = renderer;
         this->functionPointer = function;
-        SetTextAsTexture(&this->text);
+        texture = std::shared_ptr<SDL_Texture>(SetTextAsTexture(renderer, textureRect, rect, text, textColor, font), SDL_DestroyTexture);
+    }
+
+    Button(int x, int y, int w, int h, std::function<void()> function, SDL_Texture *tex, SDL_Renderer *renderer) : GUIElement(x, y, w, h){
+        this->renderer = renderer;
+        this->functionPointer = function;
+        texture = std::shared_ptr<SDL_Texture>(SetTexture(renderer, textureRect, tex), SDL_DestroyTexture);
     }
 };

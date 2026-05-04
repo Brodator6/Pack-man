@@ -57,10 +57,10 @@ void Actor::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int
     this->rect.h = squareSize - 10;
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(renderer, &this->rect);
-    SDL_RenderTextureRotated(renderer, texture, NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(renderer, texture.get(), NULL, &this->rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
-Actor::Actor(int x, int y, SDL_Texture *tex) : Entity{x,y, tex}{
+Actor::Actor(int x, int y, std::shared_ptr<SDL_Texture> tex) : Entity{x,y, std::move(tex)}{
     targetX = x;
     targetY = y;
     visualX = float(x);

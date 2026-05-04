@@ -1,5 +1,6 @@
 #include "EntityManager.h"
 #include "EntityFactory.h"
+#include "AI/BehaviorTree.h"
 
 void EntityManager::UpdateShadowGrid(){
 
@@ -64,7 +65,6 @@ void EntityManager::RequestAddEnemy(Actor newEnemy){
     enemies.push_back(std::move(newEnemy));
 };
 
-
 void EntityManager::RequestRemoveEntityByID(int entityID){
     removalQueue.push_back(entityID);
 }
@@ -72,6 +72,16 @@ void EntityManager::RequestRemoveEntityByID(int entityID){
 void EntityManager::SetPlayer(Player newPlayer){
     player = newPlayer;
 };
+
+void EntityManager::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize, Actor &actor){
+    actor.rect.x = hightMargine + actor.visualX * cellHight + 5;
+    actor.rect.y = widthMargine + actor.visualY * cellWidth + 5;
+    actor.rect.w = squareSize - 10;
+    actor.rect.h = squareSize - 10;
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderFillRect(renderer, &actor.rect);
+    SDL_RenderTextureRotated(renderer, actor.texture.get(), NULL, &actor.rect, (0.0 + ((actor.direction == Direction::Down) * 90.0) + ((actor.direction == Direction::Left) * 180.0) + ((actor.direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+}
 
 void EntityManager::UpdateState(){
     if(!removalQueue.empty()){
@@ -95,6 +105,9 @@ void EntityManager::UpdateState(){
 }
 
 EntityManager::EntityManager(){
+};
+
+EntityManager::~EntityManager(){
 };
 
 void EntityManager::SetUp(Blackboard &bb){

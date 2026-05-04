@@ -47,16 +47,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Puck-man", columns * cellWidth + widthMargine * 2, rows * cellHight + hightMargine * 2, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Puck-man", 1920, 1080, 0, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    SDL_SetRenderLogicalPresentation(renderer, columns * cellWidth + widthMargine * 2, rows * cellHight + hightMargine * 2, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_SetRenderLogicalPresentation(renderer, 1920, 1080, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_SetWindowTitle(window, "sas");
-
-    menus.PushMenu(std::make_unique<MainMenu>(&menus, &window, &renderer));
-
+    menus.SetTheStage(&window, &renderer, 1700, 900);
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 
@@ -64,7 +62,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 /* This function runs when a new event (mouse input, keypresses, etc) occurs. */
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
 {
-    menus.GetMenu()->HandleEvents(event);
+    menus.HandleEvents(event);
     switch (event->type)
     {
     case SDL_EVENT_QUIT:
@@ -82,9 +80,9 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 {
     DrawBackground(renderer);
 
-    menus.GetMenu()->HandleGameLogic();
+    menus.HandleLogic();
 
-    menus.GetMenu()->DrawWindow();
+    menus.DrawMenu();
 
     SDL_RenderPresent(renderer);
  

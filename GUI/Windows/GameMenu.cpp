@@ -1,9 +1,7 @@
 #include "GameMenu.h"
 
-#include "../../Entities/EntityFactory.h"
-#include "../../UpdateInput.cpp"
-#include "../../Entities/AI/BehaviorTree.h"
-#include "../../LevelLoader.h"
+#include "../../Entities/Player.h"
+#include "../../Entities/Actor.h"
 #include "../../TileSystem.h"
 #include "PauseMenu.h"
 
@@ -12,18 +10,20 @@ void GameMenu::DrawWindow(){
     SDL_FRect rect;
     rect = {0, 0, (float)cellWidth, (float)cellHight};
 
-    for (int i = 0; i < bb.rows; i++){// loop for displaying current level
-        for(int j = 0; j < bb.columns; j++){
-            DrawTile((*this->renderer), level[i][j], &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+    for (int i = 0; i < gameManager.blackboard.rows; i++){// loop for displaying current level
+        for(int j = 0; j < gameManager.blackboard.columns; j++){
+            DrawTile((*menuBlackboard.renderer), gameManager.level[i][j], &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
         }
     }
-    
 
-    entityManager.GetPlayer().DrawEntity((*this->renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+    gameManager.entityManager.GetPlayer().DrawEntity((*menuBlackboard.renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
 
-    for(auto &actor : entityManager.enemies){
-        actor.DrawEntity((*this->renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+    for(auto &actor : gameManager.entityManager.enemies){
+        actor.DrawEntity((*menuBlackboard.renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
     }
+    
+    scoreText.DrawElement(*menuBlackboard.renderer);
+    abilityIcon1.DrawElement(*menuBlackboard.renderer);
 };
 
 SDL_AppResult GameMenu::HandleEvents(SDL_Event *Event){
@@ -31,8 +31,7 @@ SDL_AppResult GameMenu::HandleEvents(SDL_Event *Event){
     case SDL_EVENT_KEY_DOWN:
         switch (Event->key.scancode){
             case SDL_SCANCODE_ESCAPE: {
-                PauseMenuDataTransportationStruct transportationBB = {previousTimeFrame, currentTimeFrame};
-                menus->PushMenu(std::make_unique<PauseMenu>(menus, window, renderer, transportationBB));
+                menus->PushMenu(std::make_unique<PauseMenu>(menus, menuBlackboard, timeBlackboard));
             }
             default: 
                 break;
@@ -44,61 +43,34 @@ SDL_AppResult GameMenu::HandleEvents(SDL_Event *Event){
     return SDL_APP_CONTINUE;
 };
 
-void GameMenu::GenerateLevel(){
-    level = LevelLoader::LoadLevel("./Assets/Levels/level1.txt", bb.rows, bb.columns);
-}
-
 void GameMenu::HandleGameLogic(){
-    previousTimeFrame = currentTimeFrame;
-    currentTimeFrame = std::chrono::high_resolution_clock::now();
-
-    UpdateInput(entityManager.GetPlayer().controls);
+    timeBlackboard.previousTickTime = timeBlackboard.currentTime;
+    timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
     
-    accumulator += currentTimeFrame - previousTimeFrame;    
-    while(accumulator >= deltaTime){
-        UpdateState();
-        entityManager.GetPlayer().Move();
-
-        for(auto &actor : entityManager.enemies){
-            actor.AI->Tick(actor, bb);
-            actor.UpdateMovement();
-            actor.Move();
+    accumulator += timeBlackboard.currentTime - timeBlackboard.previousTickTime;    
+    while(accumulator >= timeBlackboard.deltaTime){
+        scoreText.UpdateTextTexture(("Score: " + std::to_string(gameManager.entityManager.GetPlayer().score)), font, textColor);
+        if(gameManager.lost){
+            menus->PushMenu(std::make_unique<MainMenu>(menus, menuBlackboard, timeBlackboard));
         }
-        
-        entityManager.UpdateState();
-        entityManager.UpdateShadowGrid();
-        accumulator -= deltaTime;
-    }
-}
-
-void GameMenu::UpdateState(){
-    //this IS hell
-    entityManager.GetPlayer().UpdateMovement(level, bb.rows, bb.columns);
-
-    entityManager.GetPlayer().UseAbility();
-
-    entityManager.GetPlayer().UpdateAbilitiesCooldown(deltaTime.count());
-
-    int playerGridIndex = entityManager.GetPlayer().GetPositionY() * bb.columns + entityManager.GetPlayer().GetPositionX();
-    for(auto id : entityManager.shadowGrid[playerGridIndex].entityIDs){
-        if(id > entityManager.GetPlayer().ID && entityManager.GetEntityById(id)->actorType == ActorType::DinamicActor){
-            menus->RequestRootSwap(std::make_unique<MainMenu>(menus, window, renderer));
-        }
+        gameManager.HandleGameLogic();
+        accumulator -= timeBlackboard.deltaTime;
     }
 
-    ApplyEffect(&entityManager.GetPlayer(), level[entityManager.GetPlayer().GetPositionY()][entityManager.GetPlayer().GetPositionX()]);
+    if (accumulator > std::chrono::milliseconds(250)) {
+        accumulator = std::chrono::milliseconds(250); // "відрізаємо" занадто велику затримку
+    }
 }
 
 std::function<void()> GameMenu::ToMainMenu(){
     return [this](){
-        menus->RequestRootSwap(std::make_unique<MainMenu>(menus, window, renderer));
+        menus->RequestRootSwap(std::make_unique<MainMenu>(menus, menuBlackboard, timeBlackboard));
     };
 }
 
-GameMenu::GameMenu(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer) : GUI(menus, window, renderer){
-    GenerateLevel();
-    entityManager.SetUp(bb);
-    std::cout << "done1" << std::endl;
+GameMenu::GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : GUI(menus, mBB, tBB), gameManager{*mBB.renderer, tBB}{
+
+    abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer);
 }
 
 GameMenu::~GameMenu(){

@@ -1,5 +1,7 @@
 #pragma once
-
+#include <memory>
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
 
 enum class AbilityType{
     None,
@@ -25,4 +27,86 @@ struct Ability{
     float duration;
     int charges;
     bool isConsumable;
+
+    std::shared_ptr<SDL_Texture> texture{nullptr};
+};
+
+
+class AbilityFactory
+{
+private:
+    SDL_Renderer *renderer = nullptr;
+public:
+    Ability CreateAbility(AbilityType type){
+        Ability ability;
+        ability.type = AbilityType::None;
+        ability.cooldownRemaining = 0.0f;
+        ability.cooldownDuration = 0.0f;
+        ability.durationRemaining = 0.0f;
+        ability.duration = 0.0f;
+        ability.charges = 0;
+        ability.isConsumable = false;
+        ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"), SDL_DestroyTexture);
+
+
+        switch (type)
+        {
+        case AbilityType::Claymore:{
+            ability.type = AbilityType::Claymore;
+            ability.cooldownDuration = 5.0f;
+            ability.duration = 0.0f;
+            ability.charges = 5;
+            ability.isConsumable = true;
+            break;
+        }
+
+        case AbilityType::WallCharge:{
+            ability.type = AbilityType::WallCharge;
+            ability.cooldownDuration = 50.0f;
+            ability.duration = 0.0f;
+            ability.charges = 5;
+            ability.isConsumable = true;
+            break;
+        }
+
+        case AbilityType::RoadBlocker:{
+            ability.type = AbilityType::RoadBlocker;
+            ability.cooldownDuration = 50.0f;
+            ability.duration = 0.0f;
+            ability.charges = 3;
+            ability.isConsumable = true;
+            break;
+        }
+
+        case AbilityType::SpeedBoost:{
+            ability.type = AbilityType::SpeedBoost;
+            ability.cooldownDuration = 40.0f;
+            ability.duration = 3.0f;
+            ability.charges = 0;
+            ability.isConsumable = false;
+            break;
+        }
+
+        case AbilityType::Invisibility:{
+            ability.type = AbilityType::Invisibility;
+            ability.cooldownDuration = 40.0f;
+            ability.duration = 5.0f;
+            ability.charges = 0;
+            ability.isConsumable = false;
+            break;
+        }
+        
+        default:
+            break;
+        }
+
+        return ability;
+    }
+    AbilityFactory(SDL_Renderer *rend){
+        renderer = rend;
+    };
+
+    ~AbilityFactory(){
+        
+    };
 };

@@ -136,11 +136,8 @@ void Player::UseAbility(){
 
         if(ability.isConsumable){
             ability.charges--;
-            if(ability.charges <= 0){
-                ability.type = AbilityType::None;
-                ability.cooldownDuration = 0;
-                ability.cooldownRemaining = 0;
-                ability.isConsumable = false;
+            if(ability.charges <= 0){ 
+                ability = blackboard->abilityFactory.CreateAbility(AbilityType::None);
             }
         }
 
@@ -185,7 +182,7 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
     this->rect.h = squareSize - 10;
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(renderer, &this->rect);
-    SDL_RenderTextureRotated(renderer, texture, NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(renderer, texture.get(), NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
 Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> movement):Entity{x, y}, blackboard{bb}, controls{movement} {
@@ -195,10 +192,10 @@ Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> moveme
     visualX = x;
     visualY = y;
 
-    abilities[AbilityID::permanentAbility1] = {AbilityType::SpeedBoost, 0.0f, 10.0f, 0.0f, 3.0f, 0, false};
-    abilities[AbilityID::permanentAbility2] = {AbilityType::Invisibility, 0.0f, 15.0f, 0.0f, 5.0f, 0, false};
-    abilities[AbilityID::consumableAbility1] = {AbilityType::Claymore, 0.0f, 4.0f, 0.0f, 0.0f, 3, true};
-    abilities[AbilityID::consumableAbility2] = {AbilityType::WallCharge, 0.0f, 6.0f, 0.0f, 0.0f, 2, true};
+    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
+    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::Claymore);
+    abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::WallCharge);
+    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::RoadBlocker);
 
 }
 

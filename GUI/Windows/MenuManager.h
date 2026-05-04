@@ -1,6 +1,9 @@
 #pragma once
 #include <vector>
 #include <memory>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_events.h>
+#include "../../DataStructs.h"
 
 class GUI;
 
@@ -11,51 +14,28 @@ private:
     std::unique_ptr<GUI> pendingRoot = nullptr;
     bool pendingPop = false;
 
+    MenuBlackboard menuBlackboard;
+
+    TimeBlackboard timeBlackboard;
+
 public:
-    void PushMenu(std::unique_ptr<GUI> newMenu){
-        menus.push_back(std::move(newMenu));
-    };
 
-    void PopMenu(){
-        if(!menus.empty()){
-            menus.pop_back();
-        }
-    };
+    void DrawMenu();
+    void HandleEvents(SDL_Event *event);
+    void HandleLogic();
 
-    bool IsEmpty(){
-        return menus.empty();
-    }
+    void PushMenu(std::unique_ptr<GUI> newMenu);
+    void PopMenu();
+    bool IsEmpty();
 
-    GUI* GetRootMenu(){
-        return menus.front().get();
-    };
+    GUI* GetRootMenu();
+    GUI* GetMenu();
 
-    GUI* GetMenu(){
-        return menus.back().get();
-    };
+    void RequestRootSwap(std::unique_ptr<GUI> newMenu);
+    void RequestMenuPop();
+    void applyPendingRequest();
 
-    void RequestRootSwap(std::unique_ptr<GUI> newMenu) {
-        pendingRoot = std::move(newMenu);
-    }
-
-    void RequestMenuPop(){
-        pendingPop = true;
-    }
-
-    void applyPendingRequest() {
-        if (pendingPop) {
-            this->PopMenu();
-            pendingPop = false;
-        }
-        if (!pendingRoot) return;
-
-        menus.clear(); 
-        menus.push_back(std::move(pendingRoot));
-        
-        pendingRoot = nullptr; // Reset the request
-
-    }
-
+    void SetTheStage(SDL_Window **window, SDL_Renderer **renderer, int WindowWidth, int WindowHight);
     MenuManager() = default;
     ~MenuManager()  = default;
 };

@@ -3,8 +3,8 @@
 void PauseMenu::DrawWindow(){//drawing all elements
     menus->GetRootMenu()->DrawWindow();
 
-    resumeButton.DrawElement(*renderer);
-    quitButton.DrawElement(*renderer);
+    resumeButton.DrawElement(*menuBlackboard.renderer);
+    quitButton.DrawElement(*menuBlackboard.renderer);
 }
 
 SDL_AppResult PauseMenu::HandleEvents(SDL_Event *Event){//handling GUI events
@@ -27,19 +27,18 @@ SDL_AppResult PauseMenu::HandleEvents(SDL_Event *Event){//handling GUI events
 }
 
 void PauseMenu::HandleGameLogic(){
-    blackboard.previousTimeFrame = blackboard.currentTimeFrame;
-    blackboard.currentTimeFrame = std::chrono::high_resolution_clock::now();
+    timeBlackboard.previousTickTime = timeBlackboard.currentTime;
+    timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
 }
 
 std::function<void()> PauseMenu::ToMainMenu(){
     return [this](){
-        menus->RequestRootSwap(std::make_unique<MainMenu>(menus, window, renderer));
+        menus->RequestRootSwap(std::make_unique<MainMenu>(menus, menuBlackboard, timeBlackboard));
     };
 }
 
-PauseMenu::PauseMenu(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer, PauseMenuDataTransportationStruct bb) : GUI(menus, window, renderer), blackboard{bb}{
+PauseMenu::PauseMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : GUI(menus, mBB, tBB){
 }
 
 PauseMenu::~PauseMenu(){
-    std::cout << "deleted" << std::endl;
 }

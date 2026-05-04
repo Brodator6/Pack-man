@@ -39,7 +39,8 @@ add_executable(Pac-Man
     GUI/Windows/GameMenu.cpp
     GUI/Windows/PauseMenu.cpp
     GUI/Elements/GUIElement.cpp
-    GUI/Windows/GUI.h
+    GUI/Windows/MenuManager.cpp
+    Entities/GameMaganer.cpp
     Entities/AI/AIUtils.cpp
     Entities/Entity.cpp
     Entities/Player.cpp

@@ -3,17 +3,10 @@
 #include "GUI.h"
 #include "GameMenu.h"
 
-struct PauseMenuDataTransportationStruct{
-    std::chrono::time_point<std::chrono::high_resolution_clock> &previousTimeFrame;
-    std::chrono::time_point<std::chrono::high_resolution_clock> &currentTimeFrame;
-};
-
-
 class PauseMenu : public GUI{
 private:
-    Button resumeButton = Button(300, 300, 200, 50, this->BackToPreviousMenu(), "Resume" , font, &textColor, (*this->renderer));
-    Button quitButton = Button(300, 400, 200, 50, this->ToMainMenu(), "To main menu" , font, &textColor, (*this->renderer));
-    PauseMenuDataTransportationStruct blackboard;
+    Button resumeButton = Button(300, 300, 200, 50, this->BackToPreviousMenu(), "Resume" , font, textColor, (*menuBlackboard.renderer));
+    Button quitButton = Button(300, 400, 200, 50, this->ToMainMenu(), "To main menu" , font, textColor, (*menuBlackboard.renderer));
 public:
     void DrawWindow() override;
 
@@ -23,7 +16,7 @@ public:
 
     std::function<void()> ToMainMenu();
 
-    PauseMenu(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer, PauseMenuDataTransportationStruct);
+    PauseMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB);
 
     ~PauseMenu();
 };

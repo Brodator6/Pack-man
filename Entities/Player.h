@@ -10,13 +10,10 @@ class Player: public Entity
 {
 private:
     float speedModifier = 1;
-    float visualX, visualY;
-    int targetX, targetY;
     Blackboard *blackboard;
 
-    Ability abilities[4];
-
 public:
+    Ability abilities[4];
     int ID = 0;
     int score = 0;
     std::map<SDL_Scancode, bool> controls;

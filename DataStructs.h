@@ -1,9 +1,11 @@
 #pragma once
 #include <vector>
+#include <chrono>
 #include "TileData.h"
 
 class EntityManager;
 class EntityFactory;
+class AbilityFactory;
 
 struct GridCell {
     int entityIDs[3];
@@ -25,6 +27,25 @@ struct Blackboard {
     std::vector<std::vector<TileData>> &level;
     EntityManager &entityManager;
     EntityFactory &entityFactory;
+    AbilityFactory &abilityFactory;
+};
+
+struct MenuBlackboard{
+    SDL_Window **window = NULL;
+    SDL_Renderer **renderer = NULL;
+
+    int windowWidth, windowHight;
+};
+
+struct TimeBlackboard{
+    //data to manage game loop
+    std::chrono::duration<double> deltaTime = std::chrono::duration<float>(1.0/20.0);
+
+    std::chrono::time_point<std::chrono::high_resolution_clock> previousTickTime = std::chrono::high_resolution_clock::now(); // might want to replace auto with smth different
+    std::chrono::time_point<std::chrono::high_resolution_clock> currentTime = std::chrono::high_resolution_clock::now();
+    
+    std::chrono::time_point<std::chrono::high_resolution_clock> frameEnd = std::chrono::high_resolution_clock::now(); // might want to replace auto with smth different
+    std::chrono::duration<double>  frameDuration = std::chrono::duration<float>(0.0);
 };
 
 //needs reworking

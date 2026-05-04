@@ -3,6 +3,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include "Player.h"
+#include "ResourceManager.h"
 
 enum EntityType{
     BasicEnemy,
@@ -16,9 +17,11 @@ class EntityFactory
 {
 private:
     SDL_Renderer *renderer;
+    ResourceManager textureManager;
 public:
-    Actor CreateEntity(int x, int y, Direction direction,EntityType type) {
-        Actor actor = Actor(x, y, IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"));
+    Actor CreateEntity(int x, int y, Direction direction, EntityType type) {
+        auto texture = textureManager.getTexture("./Assets/Sprites/testSprite.png");
+        Actor actor = Actor(x, y, texture);
         actor.actorType = ActorType::DinamicActor;
         actor.direction = direction;
         actor.DinamicEntity.goalX = x;
@@ -85,7 +88,8 @@ public:
 
 
     Actor CreateStaticEntity(int x, int y, Direction direction, EntityType type) {
-        Actor actor = Actor(x, y, IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"));
+        auto texture = textureManager.getTexture("./Assets/Sprites/testSprite.png");
+        Actor actor = Actor(x, y, texture);
         actor.actorType = ActorType::StaticActor;
         actor.direction = direction;
         actor.DinamicEntity.speedModifier = 1;
@@ -116,13 +120,20 @@ public:
     Player CreatePlayer(int x, int y, Direction direction, Blackboard &bb){
         Player player = Player (x, y, &bb);
         player.direction = direction;
-        player.SetTexture(IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"));
+        player.SetTexture(textureManager.getTexture("./Assets/Sprites/testSprite.png"));
 
         return player;
     };
-    EntityFactory(SDL_Renderer *rend){
-        renderer = rend;
-        std::cout << "done3" << std::endl;
+
+    EntityFactory(SDL_Renderer *rend)
+        : renderer(rend), textureManager(rend)
+    {
     };
+
+    EntityFactory()
+        : renderer(nullptr), textureManager(nullptr)
+    {
+    };
+
     ~EntityFactory() = default;
 };

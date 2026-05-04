@@ -28,6 +28,9 @@ public:
     void SetPlayer(Player newPlayer);
     void RequestRemoveEntityByID(int entityID);
 
+    void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize, Actor &actor);
+    void MoveEntity();
+
     void UpdateState();
 
     // Get the appropriate blackboard for an enemy
@@ -37,5 +40,5 @@ public:
     Player& GetPlayer(){return player;};
     EntityManager();
     void SetUp(Blackboard &bb);
-    ~EntityManager() = default;
+    ~EntityManager();
 };

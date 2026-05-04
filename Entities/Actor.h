@@ -22,8 +22,6 @@ class Actor : public Entity
 {
 public:
     int entityID = -1; //need inspection on if it can be removed/optimized
-    float visualX, visualY;
-    int targetX, targetY;
     EnemyType enemyType = EnemyType::None; //*//
 
     std::vector<Cell> currentPath;
@@ -53,5 +51,5 @@ public:
     void UpdateMovement();
     void Move();
 
-    Actor(int x, int y, SDL_Texture *tex);
+    Actor(int x, int y, std::shared_ptr<SDL_Texture> tex);
 };

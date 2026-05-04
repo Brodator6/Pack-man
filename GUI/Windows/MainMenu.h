@@ -10,9 +10,9 @@ class GameWindow;
 
 class MainMenu : public GUI{
 private:
-    Button startButton = Button(300, 200, 200, 50, this->StartTheGame(), "Start" , font, &textColor, (*this->renderer));
-    Button settingsButton = Button(300, 300, 200, 50, this->SwitchToTheSettings(), "Settings" , font, &textColor, (*this->renderer));
-    Button quitButton = Button(300, 400, 200, 50, this->Quit(), "Quit" , font, &textColor, (*this->renderer));
+    Button startButton = Button(300, 200, 200, 50, this->StartTheGame(), "Start" , font, textColor, (*menuBlackboard.renderer));
+    Button settingsButton = Button(300, 300, 200, 50, this->SwitchToTheSettings(), "Settings" , font, textColor, (*menuBlackboard.renderer));
+    Button quitButton = Button(300, 400, 200, 50, this->Quit(), "Quit" , font, textColor, (*menuBlackboard.renderer));
 
 public:
     void DrawWindow() override;
@@ -25,7 +25,7 @@ public:
 
     std::function<void()> Quit();
 
-    MainMenu(MenuManager *menus, SDL_Window **window, SDL_Renderer **renderer);
+    MainMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB);
     
     ~MainMenu();
 };
