@@ -54,7 +54,7 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
     SDL_SetRenderLogicalPresentation(renderer, 1920, 1080, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_SetWindowTitle(window, "sas");
-    menus.SetTheStage(&window, &renderer, 1700, 900);
+    menus.SetTheStage(&window, &renderer, 1920, 1080);
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 

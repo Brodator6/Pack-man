@@ -2,10 +2,12 @@
 #include <vector>
 #include <chrono>
 #include "TileData.h"
+#include <SDL3/SDL.h>
 
 class EntityManager;
 class EntityFactory;
 class AbilityFactory;
+class Ability;
 
 struct GridCell {
     int entityIDs[3];
@@ -35,6 +37,12 @@ struct MenuBlackboard{
     SDL_Renderer **renderer = NULL;
 
     int windowWidth, windowHight;
+};
+
+struct AbilityMenuBlackboard {
+    Ability* playerAbilities = nullptr;           // Pointer to player's abilities array (size 4)
+    AbilityFactory* abilityFactory = nullptr;     // Factory to create new abilities
+    SDL_Renderer* renderer = nullptr;             // Renderer for creating textures
 };
 
 struct TimeBlackboard{

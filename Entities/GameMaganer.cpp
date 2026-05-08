@@ -14,11 +14,8 @@ void GameManager::HandleGameLogic(){
     UpdateState();
     entityManager.GetPlayer().Move();
 
-    for(auto &actor : entityManager.enemies){
-        actor.AI->Tick(actor, blackboard);
-        actor.UpdateMovement();
-        actor.Move();
-    }
+    entityManager.UpdateAI(blackboard);
+    entityManager.UpdateMovement();
     
     entityManager.UpdateState();
     entityManager.UpdateShadowGrid();

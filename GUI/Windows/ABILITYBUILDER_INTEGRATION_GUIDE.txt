@@ -1,0 +1,55 @@
+// Example: How to integrate AbilityMenu into GameMenu
+// This shows how GameMenu should pass the necessary data to AbilityMenu via the blackboard
+
+// In GameMenu.cpp (example addition):
+
+void GameMenu::OpenAbilityMenu() {
+    // Create the ability menu blackboard with necessary data
+    AbilityMenuBlackboard abilityBlackboard{
+        .playerAbilities = gameManager.entityManager.GetPlayer().abilities,
+        .abilityFactory = &gameManager.entityFactory.abilityFactory,  // You may need to access this appropriately
+        .renderer = *menuBlackboard.renderer
+    };
+    
+    // Push the AbilityMenu onto the menu stack
+    menus->PushMenu(std::make_unique<AbilityMenu>(menus, menuBlackboard, timeBlackboard, abilityBlackboard));
+}
+
+// Key Features of AbilityMenu Implementation:
+// ============================================
+
+// 1. ABILITY PROPOSAL LOGIC:
+//    - If player has empty slots (AbilityType::None):
+//      -> Proposes 3 random new ability types from all available abilities
+//    - If no empty slots but has consumable abilities:
+//      -> Proposes 3 random consumable abilities with option to add charges (1-3)
+//
+// 2. UI ELEMENTS:
+//    - 3 Buttons displaying proposed ability options
+//    - 3 Text elements showing descriptions for each proposed ability
+//    - Title text "Select an Ability to Add"
+//    - Gray background
+//
+// 3. ABILITY DESCRIPTIONS PROVIDED:
+//    - Claymore: Explosion ability (Charges: 5, Cooldown: 5s)
+//    - WallCharge: Ram through walls (Charges: 5, Cooldown: 50s)
+//    - RoadBlocker: Place obstacle (Charges: 3, Cooldown: 50s)
+//    - SpeedBoost: Increase movement speed (Duration: 3s, Cooldown: 40s)
+//    - Invisibility: Hide from enemies (Duration: 5s, Cooldown: 40s)
+//
+// 4. BUTTON ACTION:
+//    - When a button is clicked:
+//      * If empty slot exists: Creates and adds the new ability to player's array
+//      * If no empty slot: Adds random charges (1-3) to selected consumable ability
+//      * Closes the menu and returns to GameMenu
+//
+// 5. DATA STRUCTURES USED:
+//    - AbilityMenuBlackboard struct (defined in DataStructs.h):
+//      * playerAbilities: Pointer to player's 4-slot ability array
+//      * abilityFactory: Pointer to create new abilities
+//      * renderer: SDL_Renderer for drawing UI elements
+//
+// 6. CLASS HIERARCHY:
+//    AbilityMenu extends GUI
+//    -> Inherits virtual methods: DrawWindow(), HandleEvents(), HandleGameLogic()
+//    -> Provides blackboard-based data passing pattern consistent with project architecture

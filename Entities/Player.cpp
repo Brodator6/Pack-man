@@ -193,9 +193,9 @@ Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> moveme
     visualY = y;
 
     abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
-    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::Claymore);
-    abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::WallCharge);
-    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::RoadBlocker);
+    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
+    abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
+    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
 
 }
 

@@ -53,29 +53,6 @@ public:
             break;
         }
         case EntityType::AdvancedEnemy : {
-            actor.enemyType = EnemyType::AdvancedEnemy;
-            
-            // PRIORITY 2: Find and share target information (direct vision)
-            auto findAndShare = std::make_unique<SequenceNode>();
-            findAndShare->AddChildNode(std::make_unique<FindTarget>());
-            findAndShare->AddChildNode(std::make_unique<ShareTargetInformationNode>());
-            findAndShare->AddChildNode(std::make_unique<FindPathNode>());
-            root->AddChildNode(std::move(findAndShare));
-            
-            // PRIORITY 3: Use shared target information from teammates
-            auto useSharedTarget = std::make_unique<SequenceNode>();
-            useSharedTarget->AddChildNode(std::make_unique<UseSharedTargetInformationNode>());
-            useSharedTarget->AddChildNode(std::make_unique<FindPathNode>());
-            root->AddChildNode(std::move(useSharedTarget));
-
-            // PRIORITY 4: Predictive behavior when chasing
-            auto SearchForPlayer = std::make_unique<SequenceNode>();
-            SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
-            SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
-            root->AddChildNode(std::move(SearchForPlayer));
-
-            // PRIORITY 5: Patrol
-            root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
             break;
         }
         default:

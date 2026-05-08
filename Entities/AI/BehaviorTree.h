@@ -7,7 +7,8 @@
 
 #include "AIUtils.h"
 #include "../Pathfinding/Pathfinding.h"
-#include "../Actor.h"
+#include "../Components.h"
+#include "../Systems.h"
 #include "../../DataStructs.h"
 #include "../EntityManager.h"
 
@@ -20,7 +21,7 @@ enum NodeStatus{
 class Node
 {
 public:
-    virtual NodeStatus Tick(Actor &actor, Blackboard& bb) = 0;
+    virtual NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) = 0;
     virtual void Reset(){};
     virtual ~Node() = default;
 };
@@ -46,9 +47,9 @@ public:
 class SequenceNode : public CompositeNode
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         for (auto& child : childNodes) {
-            NodeStatus status = child->Tick(actor, bb);
+            NodeStatus status = child->Tick(entityID, position, movement, Ai, type, staticComp, bb);
 
             if (status == NodeStatus::FAILURE){
                 Reset();
@@ -63,9 +64,9 @@ public:
 class SelectorNode : public CompositeNode
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         for (auto& child : childNodes) {
-            NodeStatus status = child->Tick(actor, bb);
+            NodeStatus status = child->Tick(entityID, position, movement, Ai, type, staticComp, bb);
             
             if (status == NodeStatus::SUCCESS){
                 Reset();
@@ -80,12 +81,12 @@ public:
 class FindTarget : public Node
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        int dirX =  (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
-        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        int dirX =  (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
+        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
 
-        int checkX = actor.GetPositionX();
-        int checkY = actor.GetPositionY();
+        int checkX = position.x;
+        int checkY = position.y;
 
         while (true) {//check till first wall
             checkX += dirX;
@@ -100,14 +101,14 @@ public:
 
             for (int slot = 0; slot < 3; ++slot) {
                 if (bb.entityManager.shadowGrid[checkY * bb.columns + checkX].entityIDs[slot] == 0) {
-                    actor.DinamicEntity.goalX = checkX;
-                    actor.DinamicEntity.goalY = checkY;
-                    actor.DinamicEntity.LastSeenPlayerX = checkX;
-                    actor.DinamicEntity.LastSeenPlayerY = checkY;
-                    if(!actor.DinamicEntity.isChasing){
+                    movement.goalX = checkX;
+                    movement.goalY = checkY;
+                    movement.LastSeenPlayerX = checkX;
+                    movement.LastSeenPlayerY = checkY;
+                    if(!movement.isChasing){
                         std::cout << "chasing player" << std::endl;
                     }
-                    actor.DinamicEntity.isChasing = true;
+                    movement.isChasing = true;
                     return NodeStatus::SUCCESS;
                 }
             }
@@ -119,16 +120,16 @@ public:
 class FindPathNode : public Node
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        if(!actor.currentPath.empty()) return NodeStatus::FAILURE;
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        if(!Ai.currentPath.empty()) return NodeStatus::FAILURE;
         Grid gameGrid;
         gameGrid = Grid::GenerateGrid(&bb.level);
 
-        int dirX = (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
-        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
+        int dirX = (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
+        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
 
         APAthFinding pathFinding;
-        actor.currentPath = pathFinding.FindPath({actor.GetPositionX() + dirX, actor.GetPositionY() + dirY}, {actor.DinamicEntity.goalX, actor.DinamicEntity.goalY}, &gameGrid);
+        Ai.currentPath = pathFinding.FindPath({position.x + dirX, position.y + dirY}, {movement.goalX, movement.goalY}, &gameGrid);
         
         return NodeStatus::SUCCESS;
     }
@@ -148,18 +149,18 @@ private:
     } Weights;
 
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         // 1. If already moving, don't pick a new direction
 
-        int x = actor.GetPositionX();
-        int y = actor.GetPositionY();
+        int x = position.x;
+        int y = position.y;
         
         // Calculate current forward vector
-        int dirX = (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
-        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
+        int dirX = (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
+        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
 
         // This is your specific logic: If there's a side-path available...
-        if (actor.HasReachedNode() && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !actor.DinamicEntity.isChasing) {
+        if (MovementSystem::HasReachedNode(position, movement) && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !movement.isChasing) {
             std::cout << "turn?" << std::endl;
             const std::pair<int, int> dirs[4] = {{0,-1}, {1,0}, {0,1}, {-1,0}};
 
@@ -200,21 +201,21 @@ public:
             }
 
             // 3. Apply results
-            actor.DinamicEntity.goalX = selection.first;
-            actor.DinamicEntity.goalY = selection.second;
-            actor.currentPath = {{selection.first, selection.second, true}};
+            movement.goalX = selection.first;
+            movement.goalY = selection.second;
+            Ai.currentPath = {{selection.first, selection.second, true}};
             //actor.currentPath.push_back({selection.first, selection.second, true});
             return NodeStatus::SUCCESS;
         }
         
         if(!bb.level[y + dirY][x + dirX].isWalkable){
-            actor.direction = static_cast<Direction>((actor.direction + 2) % 4);
+            movement.direction = static_cast<Direction>((movement.direction + 2) % 4);
             dirX *=-1;
             dirY *= -1;
         }
 
-        if(actor.currentPath.empty()){
-            actor.currentPath = {{x + dirX, y + dirY, true}};
+        if(Ai.currentPath.empty()){
+            Ai.currentPath = {{x + dirX, y + dirY, true}};
             return NodeStatus::SUCCESS;   
             //actor.currentPath = AIUtils::GetPathToNextWalkableTile(bb, actor, dirX, dirY);
         }
@@ -231,11 +232,11 @@ public:
 class PredictPlayersTurn : public Node
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        if(actor.HasReachedNode() && actor.GetPositionX() == actor.DinamicEntity.LastSeenPlayerX && actor.GetPositionY() == actor.DinamicEntity.LastSeenPlayerY && actor.DinamicEntity.isChasing){
-            actor.DinamicEntity.LastSeenPlayerX = -1;
-            actor.DinamicEntity.LastSeenPlayerY = -1;
-            actor.DinamicEntity.isChasing = false;
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        if(MovementSystem::HasReachedNode(position, movement) && position.x == movement.LastSeenPlayerX && position.y == movement.LastSeenPlayerY && movement.isChasing){
+            movement.LastSeenPlayerX = -1;
+            movement.LastSeenPlayerY = -1;
+            movement.isChasing = false;
             return NodeStatus::SUCCESS;
         }
         return NodeStatus::FAILURE;
@@ -246,11 +247,11 @@ public:
 class ClaymoreTriggerNode : public Node
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        int dirX = (actor.direction == Direction::Right) - (actor.direction == Direction::Left);
-        int dirY = (actor.direction == Direction::Down) - (actor.direction == Direction::Up);
-        int checkX = actor.GetPositionX() + dirX;
-        int checkY = actor.GetPositionY() + dirY;
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        int dirX = (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
+        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
+        int checkX = position.x + dirX;
+        int checkY = position.y + dirY;
 
         if (checkX < 0 || checkX >= bb.columns || checkY < 0 || checkY >= bb.rows) {
             return NodeStatus::FAILURE;
@@ -276,7 +277,8 @@ public:
         for (int id : toRemove) {
             bb.entityManager.RequestRemoveEntityByID(id);
         }
-        bb.entityManager.RequestRemoveEntityByID(actor.entityID);
+        
+        bb.entityManager.RequestRemoveEntityByID(entityID);
 
         return NodeStatus::SUCCESS;
     }
@@ -285,14 +287,14 @@ public:
 class WallChargeDetonateNode : public Node
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        if (actor.StaticEntity.timer > 0) {
-            actor.StaticEntity.timer -= 1;
+    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        if (staticComp.timer > 0) {
+            staticComp.timer -= 1;
             return NodeStatus::RUNNING;
         }
 
-        int originX = actor.GetPositionX();
-        int originY = actor.GetPositionY();
+        int originX = position.x;
+        int originY = position.y;
 
         for (int dy = -1; dy <= 1; ++dy) {
             for (int dx = -1; dx <= 1; ++dx) {
@@ -308,7 +310,7 @@ public:
                 std::vector<int> toRemove;
                 for (int slot = 0; slot < 3; ++slot) {
                     int id = cell->entityIDs[slot];
-                    if (id >= 0 && id != actor.entityID) {
+                    if (id >= 0 && id != entityID) {
                         toRemove.push_back(id);
                     }
                 }
@@ -323,8 +325,8 @@ public:
             bb.level[originY][originX].isWalkable = true;
         }
 
-        if (actor.entityID >= 0) {
-            bb.entityManager.RequestRemoveEntityByID(actor.entityID);
+        if (entityID >= 0) {
+            bb.entityManager.RequestRemoveEntityByID(entityID);
         }
 
         return NodeStatus::SUCCESS;
@@ -341,6 +343,7 @@ public:
 /// This node implements cooperative target sharing for advanced enemy types.
 /// It allows enemies to communicate the player's last known location.
 /// Extensible for CommandoType where one enemy can act as commander.
+/*
 class ShareTargetInformationNode : public Node
 {
 private:
@@ -389,3 +392,5 @@ public:
         return NodeStatus::FAILURE;
     }
 };
+
+*/

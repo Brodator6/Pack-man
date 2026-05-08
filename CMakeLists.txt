@@ -38,6 +38,7 @@ add_executable(Pac-Man
     GUI/Windows/MainMenu.cpp
     GUI/Windows/GameMenu.cpp
     GUI/Windows/PauseMenu.cpp
+    GUI/Windows/AbilityMenu.cpp
     GUI/Elements/GUIElement.cpp
     GUI/Windows/MenuManager.cpp
     Entities/GameMaganer.cpp
@@ -47,6 +48,7 @@ add_executable(Pac-Man
     Entities/Actor.cpp
     Entities/Pathfinding/Pathfinding.cpp
     Entities/EntityManager.cpp
+    Entities/Systems.cpp
     Entities/EntityFactory.h
 
 )

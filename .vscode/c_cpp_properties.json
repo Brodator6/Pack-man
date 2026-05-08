@@ -5,7 +5,9 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/SDL_Image/include",
-                "C:/stuff/mSYS2/ucrt64/include/**"
+                "C:/stuff/mSYS2/mingw64/include/**",
+                "C:/stuff/mSYS2/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/**",
+                "C:/stuff/mSYS2/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/**"
             ],
             "defines": [
                 "_DEBUG",

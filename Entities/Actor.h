@@ -1,6 +1,7 @@
 #pragma once
 #include "Entity.h"
 #include "../TileData.h"
+#include "Components.h"
 #include <memory>
 #include <vector>
 
@@ -10,13 +11,6 @@ class Tile;
 
 // Forward declarations for blackboards
 struct AdvancedEnemyBlackboard;
-
-enum class EnemyType {
-    BasicEnemy,
-    AdvancedEnemy,
-    CommandoEnemy,
-    None
-};
 
 class Actor : public Entity
 {

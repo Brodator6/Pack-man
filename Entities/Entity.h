@@ -4,21 +4,9 @@
 #include <map>
 #include <memory>
 #include <SDL3/SDL.h>
+#include "Components.h"
 
 #include <iostream>
-
-enum class ActorType{
-    DinamicActor,
-    StaticActor,
-    None
-};
-
-enum Direction{
-    Left = 0,
-    Up = 1,
-    Right = 2,
-    Down = 3
-};
 
 class Entity
 {
