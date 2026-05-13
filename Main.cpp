@@ -47,14 +47,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Puck-man", 1920, 1080, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Puck-man", 1920, 880, 0, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    SDL_SetRenderLogicalPresentation(renderer, 1920, 1080, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_SetRenderLogicalPresentation(renderer, 1920, 880, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_SetWindowTitle(window, "sas");
-    menus.SetTheStage(&window, &renderer, 1920, 1080);
+    menus.SetTheStage(&window, &renderer, 1920, 880);
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 

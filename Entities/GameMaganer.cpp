@@ -12,6 +12,7 @@ void GameManager::GenerateLevel(){
 void GameManager::HandleGameLogic(){
     UpdateInput(entityManager.GetPlayer().controls);
     UpdateState();
+
     entityManager.GetPlayer().Move();
 
     entityManager.UpdateAI(blackboard);
@@ -19,6 +20,7 @@ void GameManager::HandleGameLogic(){
     
     entityManager.UpdateState();
     entityManager.UpdateShadowGrid();
+    //entityManager.UpdatePathfindingGrid();
 };
 
 void GameManager::UpdateState(){
@@ -29,18 +31,20 @@ void GameManager::UpdateState(){
 
     entityManager.GetPlayer().UpdateAbilitiesCooldown(timeBlackboard.deltaTime.count());
 
-    int playerGridIndex = entityManager.GetPlayer().GetPositionY() * blackboard.columns + entityManager.GetPlayer().GetPositionX();
+
+    ApplyEffect(&entityManager.GetPlayer(), level[entityManager.GetPlayer().GetPositionY()][entityManager.GetPlayer().GetPositionX()]);
+
+    int playerGridIndex = entityManager.GetPlayer().GetPositionY() * blackboard.rows + entityManager.GetPlayer().GetPositionX();
     for(auto id : entityManager.shadowGrid[playerGridIndex].entityIDs){
-        if(id > entityManager.GetPlayer().ID && entityManager.GetEntityById(id)->actorType == ActorType::DinamicActor){
+        if(id > entityManager.GetPlayer().ID){
+            std::cout << "lost" << std::endl;
             lost = true;
         }
     }
-
-    ApplyEffect(&entityManager.GetPlayer(), level[entityManager.GetPlayer().GetPositionY()][entityManager.GetPlayer().GetPositionX()]);
 }
 
 GameManager::GameManager(SDL_Renderer *renderer, TimeBlackboard &tBB) : timeBlackboard{tBB}, abilityFactory(renderer){
     GenerateLevel();
-    entityFactory = EntityFactory(renderer);
+    entityFactory = EntityFactory(renderer, &blackboard);
     entityManager.SetUp(blackboard);
 };

@@ -27,6 +27,15 @@ enum class ActorType {
     None
 };
 
+enum class EntityType {
+    BasicEnemy,
+    AdvancedEnemy,
+    CommandoEnemy,
+    Claymore,
+    WallCharge,
+    None
+};
+
 enum Direction {
     Left = 0,
     Up = 1,
@@ -47,6 +56,7 @@ enum Direction {
 struct PositionComponent {
     int x, y;                    // Actual grid position
     float visualX, visualY;      // Visual position for smooth movement animation
+    Direction direction;         // Which way entity is facing
 };
 
 /// **MovementComponent**
@@ -55,7 +65,6 @@ struct PositionComponent {
 
 struct MovementComponent {
     int targetX, targetY;        // Current target tile to move toward
-    Direction direction;         // Which way entity is facing
     float speedModifier;         // 1.0 = normal, 0.5 = half speed, 2.0 = double
     int goalX, goalY;            // Final destination (for pathfinding)
     int LastSeenPlayerX, LastSeenPlayerY;  // Last known player position
@@ -69,6 +78,7 @@ struct AIComponent {
     std::vector<Cell> currentPath;  // Path from pathfinding algorithm
     std::unique_ptr<Node> AI;       // Behavior tree root node
     EnemyType enemyType;            // What type of enemy (affects behavior)
+    int tickCounter = 0;
 };
 
 /// **RenderComponent**

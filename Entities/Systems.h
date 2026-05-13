@@ -43,7 +43,7 @@ public:
 /// **MovementSystem**
 /// Updates positions and handles pathfollowing
 /// Reads: AIComponent (currentPath), PositionComponent
-/// Writes: PositionComponent (visualX, visualY, x, y), MovementComponent (direction)
+/// Writes: PositionComponent (visualX, visualY, x, y, direction)
 class MovementSystem {
 public:
     // Update all moving entities
@@ -54,13 +54,13 @@ public:
 
     bool static HasReachedNode(const PositionComponent& pos, MovementComponent& move);
 private:
-    void SetTargetDirection(const PositionComponent& pos, MovementComponent& move, int targetX, int targetY);
+    void SetTargetDirection(PositionComponent& pos, MovementComponent& move, int targetX, int targetY);
     void Move(PositionComponent& pos, MovementComponent& move);
 };
 
 /// **RenderSystem**
 /// Renders all entities to the screen
-/// Reads: PositionComponent, MovementComponent, RenderComponent
+/// Reads: PositionComponent, RenderComponent
 /// Writes: Nothing (only reads)
 class RenderSystem {
 public:

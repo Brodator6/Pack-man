@@ -1,98 +1,171 @@
 #pragma once
+#include "../DataStructs.h"
 #include "./AI/BehaviorTree.h"
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include "Player.h"
 #include "ResourceManager.h"
 
-enum EntityType{
-    BasicEnemy,
-    AdvancedEnemy,
-    CommandoEnemy,
-    Claymore,
-    WallCharge
-};
-
 class EntityFactory
 {
 private:
     SDL_Renderer *renderer;
+    Blackboard *blackboard;
     ResourceManager textureManager;
-public:
-    Actor CreateEntity(int x, int y, Direction direction, EntityType type) {
-        auto texture = textureManager.getTexture("./Assets/Sprites/testSprite.png");
-        Actor actor = Actor(x, y, texture);
-        actor.actorType = ActorType::DinamicActor;
-        actor.direction = direction;
-        actor.DinamicEntity.goalX = x;
-        actor.DinamicEntity.goalY = y;
-        actor.DinamicEntity.LastSeenPlayerX = -1;
-        actor.DinamicEntity.LastSeenPlayerY = -1;
-        actor.DinamicEntity.speedModifier = 1;
-        actor.DinamicEntity.isChasing = false;
+
+    std::unique_ptr<SelectorNode> CreateBasicAI(){
+        auto root = std::make_unique<SelectorNode>();
+
+        auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
+        root->AddChildNode(std::move(increaseTickCounter));
+
+        auto findAndPlan = std::make_unique<SequenceNode>();
+        findAndPlan->AddChildNode(std::make_unique<FindTarget>());
+        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(findAndPlan));
+
+        auto SearchForPlayer = std::make_unique<SequenceNode>();
+        SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
+        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        root->AddChildNode(std::move(SearchForPlayer));
+
+        root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
+
+        return root;
+    }
+
+    std::unique_ptr<SelectorNode> CreateAdvancedAI(){
         
         auto root = std::make_unique<SelectorNode>();
 
-        switch(type){
-        case EntityType::BasicEnemy : {
-            actor.enemyType = EnemyType::BasicEnemy;
-            // PRIORITY 1: Keep moving if we already have a path
+        auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
+        root->AddChildNode(std::move(increaseTickCounter));
 
-            // PRIORITY 2: Search for Player (Vision)
-            auto findAndPlan = std::make_unique<SequenceNode>();
-            findAndPlan->AddChildNode(std::make_unique<FindTarget>());
-            findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
-            root->AddChildNode(std::move(findAndPlan));
+        auto findAndPlan = std::make_unique<SequenceNode>();
+        findAndPlan->AddChildNode(std::make_unique<FindTarget>());
+        findAndPlan->AddChildNode(std::make_unique<ShareTargetInformationNode>());
+        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(findAndPlan));
+        
+        auto checkSharedData = std::make_unique<SequenceNode>();
+        checkSharedData->AddChildNode(std::make_unique<UseSharedTargetInformationNode>());
+        checkSharedData->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(checkSharedData));
+        
+        auto SearchForPlayer = std::make_unique<SequenceNode>();
+        SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
+        SearchForPlayer->AddChildNode(std::make_unique<UpdateSharedData>());
+        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        root->AddChildNode(std::move(SearchForPlayer));
 
-            auto SearchForPlayer = std::make_unique<SequenceNode>();
-            SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
-            SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
-            root->AddChildNode(std::move(SearchForPlayer));
+        root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
 
-            root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
-            break;
-        }
-        case EntityType::AdvancedEnemy : {
-            break;
-        }
-        default:
-            break;
-        }
+        return root;
+    }
 
-        actor.AI = std::move(root);
-        return actor;
-    };
-
-
-    Actor CreateStaticEntity(int x, int y, Direction direction, EntityType type) {
-        auto texture = textureManager.getTexture("./Assets/Sprites/testSprite.png");
-        Actor actor = Actor(x, y, texture);
-        actor.actorType = ActorType::StaticActor;
-        actor.direction = direction;
-        actor.DinamicEntity.speedModifier = 1;
-        actor.DinamicEntity.isChasing = false;
-        actor.StaticEntity.timer = 0;
-        actor.StaticEntity.cooldown = 0;
-
+    std::unique_ptr<SelectorNode> CreateCommandoAI(){
+        
         auto root = std::make_unique<SelectorNode>();
 
-        switch(type){
-        case EntityType::Claymore : {
-            root->AddChildNode(std::make_unique<ClaymoreTriggerNode>());
-            break;
-        }
-        case EntityType::WallCharge : {
-            actor.StaticEntity.timer = 50; // 5 seconds at 0.1s ticks
-            root->AddChildNode(std::make_unique<WallChargeDetonateNode>());
-            break;
-        }
-        default:
-            break;
+        auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
+        root->AddChildNode(std::move(increaseTickCounter));
+
+        auto findAndPlan = std::make_unique<SequenceNode>();
+        findAndPlan->AddChildNode(std::make_unique<FindTarget>());        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(findAndPlan));
+        
+        auto SearchForPlayer = std::make_unique<SequenceNode>();
+        SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
+        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        root->AddChildNode(std::move(SearchForPlayer));
+
+        root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
+
+        return root;
+    }
+
+public:
+    void CreateAndAddDynamicEnemy(int x, int y, Direction direction, EntityType type) {
+        if (!blackboard) return;
+
+        auto& entityManager = blackboard->entityManager;
+        int entityID = entityManager.AllocateEntityID();
+        auto& positionComponents = entityManager.GetPositionComponents();
+        auto& movementComponents = entityManager.GetMovementComponents();
+        auto& renderComponents = entityManager.GetRenderComponents();
+        auto& typeComponents = entityManager.GetTypeComponents();
+        auto& aiComponents = entityManager.GetAIComponents();
+        auto& blackboardComponents = entityManager.GetBlackboardComponents();
+
+        positionComponents[entityID] = {x, y, static_cast<float>(x), static_cast<float>(y), direction};
+        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/testSprite.png"), SDL_FRect{0, 0, 0, 0}};
+        movementComponents[entityID] = {x, y, 1.0f, x, y, -1, -1, false};
+
+        EnemyType enemyType = EnemyType::None;
+        std::unique_ptr<SelectorNode> AI;
+        switch(type) {
+            case EntityType::BasicEnemy: {
+                enemyType = EnemyType::BasicEnemy; 
+                AI = CreateBasicAI();
+                break;
+            }
+            case EntityType::AdvancedEnemy: {
+                enemyType = EnemyType::AdvancedEnemy; 
+                AI = CreateAdvancedAI();
+                break;
+            }
+            case EntityType::CommandoEnemy: {
+                enemyType = EnemyType::CommandoEnemy; 
+                break;
+            }
+            default: break;
         }
 
-        actor.AI = std::move(root);
-        return actor;
-    };
+        typeComponents[entityID] = {ActorType::DinamicActor, enemyType};
+        aiComponents[entityID] = {{}, std::move(AI), enemyType};
+
+        if (enemyType == EnemyType::AdvancedEnemy) {
+            blackboardComponents[entityID] = {&entityManager.GetAdvancedEnemyBlackboard(), nullptr};
+            entityManager.GetAdvancedEnemyBlackboard().GetOrCreateEnemyIndex(entityID);
+        } else if (enemyType == EnemyType::CommandoEnemy) {
+            blackboardComponents[entityID] = {nullptr, &entityManager.GetCommandoEnemyBlackboard()};
+            entityManager.GetCommandoEnemyBlackboard().GetOrCreateEnemyIndex(entityID);
+        }
+    }
+
+    void CreateAndAddStaticEntity(int x, int y, Direction direction, EntityType type) {
+        if (!blackboard) return;
+
+        auto& entityManager = blackboard->entityManager;
+        int entityID = entityManager.AllocateEntityID();
+        auto& positionComponents = entityManager.GetPositionComponents();
+        auto& renderComponents = entityManager.GetRenderComponents();
+        auto& typeComponents = entityManager.GetTypeComponents();
+        auto& staticComponents = entityManager.GetStaticComponents();
+        auto& aiComponents = entityManager.GetAIComponents();
+
+        positionComponents[entityID] = {x, y, static_cast<float>(x), static_cast<float>(y), direction};
+        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/testSprite.png"), SDL_FRect{0, 0, 0, 0}};
+        typeComponents[entityID] = {ActorType::StaticActor, EnemyType::None};
+        staticComponents[entityID] = {0, 0};
+
+        auto root = std::make_unique<SelectorNode>();
+        switch(type){
+            case EntityType::Claymore: {
+                root->AddChildNode(std::make_unique<ClaymoreTriggerNode>());
+                break;
+            }
+            case EntityType::WallCharge: {
+                staticComponents[entityID].timer = 50;
+                root->AddChildNode(std::make_unique<WallChargeDetonateNode>());
+                break;
+            }
+            default:
+                break;
+        }
+
+        aiComponents[entityID] = {{}, std::move(root), EnemyType::None};
+    }
 
     Player CreatePlayer(int x, int y, Direction direction, Blackboard &bb){
         Player player = Player (x, y, &bb);
@@ -102,13 +175,13 @@ public:
         return player;
     };
 
-    EntityFactory(SDL_Renderer *rend)
-        : renderer(rend), textureManager(rend)
+    EntityFactory(SDL_Renderer *rend, Blackboard *bb)
+        : renderer(rend), textureManager(rend), blackboard{bb}
     {
     };
 
     EntityFactory()
-        : renderer(nullptr), textureManager(nullptr)
+        : renderer(nullptr), textureManager(nullptr), blackboard{nullptr}
     {
     };
 

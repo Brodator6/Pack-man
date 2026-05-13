@@ -62,32 +62,32 @@ struct SharedTargetInfo {
     int lastSeenX = -1;
     int lastSeenY = -1;
     int reporterID = -1;  // Which enemy reported this position
-    int updateTickCount = 0; // How recent is this information
+    bool isValidInfo = false; // How recent is this information
 };
 
 // Base blackboard for enemies with cooperative behavior
 struct AdvancedEnemyBlackboard {
     // List of IDs belonging to advanced enemies that can share information
-    std::vector<int> advancedEnemyIDs;
+    std::vector<int> MemberIDs;
     
     // Shared target information accessible to all advanced enemies
     SharedTargetInfo sharedTarget;
     
     // Find or create entry for an enemy
     int GetOrCreateEnemyIndex(int enemyID) {
-        for (size_t i = 0; i < advancedEnemyIDs.size(); ++i) {
-            if (advancedEnemyIDs[i] == enemyID) return i;
+        for (size_t i = 0; i < MemberIDs.size(); ++i) {
+            if (MemberIDs[i] == enemyID) return i;
         }
-        advancedEnemyIDs.push_back(enemyID);
-        return advancedEnemyIDs.size() - 1;
+        MemberIDs.push_back(enemyID);
+        return MemberIDs.size() - 1;
     }
     
     // Update shared target information
-    void ShareTargetInformation(int enemyID, int playerX, int playerY, int currentTick) {
+    void ShareTargetInformation(int enemyID, int playerX, int playerY, bool dataValidity) {
         sharedTarget.lastSeenX = playerX;
         sharedTarget.lastSeenY = playerY;
         sharedTarget.reporterID = enemyID;
-        sharedTarget.updateTickCount = currentTick;
+        sharedTarget.isValidInfo = dataValidity;
     }
     
     // Get the most recent target information from all allies

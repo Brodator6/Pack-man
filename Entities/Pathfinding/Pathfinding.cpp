@@ -4,12 +4,11 @@
 #include <Cmath>
 #include <iostream>
 #include "../../TileSystem.h"
-#include "../../Entities/Actor.h"
 
 //class forwarding
 class Grid;
 
-Grid Grid::GenerateGrid(std::vector<std::vector<TileData>> *level){
+Grid Grid::GenerateGrid(std::vector<std::vector<TileData>> *level){//need replacing with reference
         Grid grid;
 
         grid.cells.resize(level[0].size(), std::vector<Cell>(level->size(), Cell(0, 0, false)));

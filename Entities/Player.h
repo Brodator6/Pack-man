@@ -15,6 +15,7 @@ private:
 public:
     Ability abilities[4];
     int ID = 0;
+    bool isInvisible = false;
     int score = 0;
     std::map<SDL_Scancode, bool> controls;
 

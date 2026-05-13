@@ -5,7 +5,7 @@
 #include <ctime>   // Required if you use time(0) to seed rand
 #include <iostream>
 
-#include "AIUtils.h"
+
 #include "../Pathfinding/Pathfinding.h"
 #include "../Components.h"
 #include "../Systems.h"
@@ -13,15 +13,15 @@
 #include "../EntityManager.h"
 
 enum NodeStatus{
-    FAILURE,
-    SUCCESS,
-    RUNNING
+    FAILURE = -1,
+    RUNNING = 0,
+    SUCCESS = 1//cngd
 };
 
 class Node
 {
 public:
-    virtual NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) = 0;
+    virtual NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) = 0;
     virtual void Reset(){};
     virtual ~Node() = default;
 };
@@ -47,7 +47,7 @@ public:
 class SequenceNode : public CompositeNode
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         for (auto& child : childNodes) {
             NodeStatus status = child->Tick(entityID, position, movement, Ai, type, staticComp, bb);
 
@@ -61,10 +61,19 @@ public:
     }
 };
 
+class IncreaseTickCounter : public Node
+{
+public:
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        Ai.tickCounter++;
+        return NodeStatus::FAILURE;
+    }
+};
+
 class SelectorNode : public CompositeNode
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         for (auto& child : childNodes) {
             NodeStatus status = child->Tick(entityID, position, movement, Ai, type, staticComp, bb);
             
@@ -81,9 +90,9 @@ public:
 class FindTarget : public Node
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
-        int dirX =  (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
-        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        int dirX =  (position.direction == Direction::Right) - (position.direction == Direction::Left);
+        int dirY = (position.direction == Direction::Down) - (position.direction == Direction::Up);
 
         int checkX = position.x;
         int checkY = position.y;
@@ -120,13 +129,15 @@ public:
 class FindPathNode : public Node
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
-        if(!Ai.currentPath.empty()) return NodeStatus::FAILURE;
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        if(Ai.tickCounter < 25 && !Ai.currentPath.empty()) return NodeStatus::FAILURE;
+        Ai.tickCounter = 0;
+
         Grid gameGrid;
         gameGrid = Grid::GenerateGrid(&bb.level);
 
-        int dirX = (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
-        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
+        int dirX = (position.direction == Direction::Right) - (position.direction == Direction::Left);
+        int dirY = (position.direction == Direction::Down) - (position.direction == Direction::Up);
 
         APAthFinding pathFinding;
         Ai.currentPath = pathFinding.FindPath({position.x + dirX, position.y + dirY}, {movement.goalX, movement.goalY}, &gameGrid);
@@ -149,19 +160,18 @@ private:
     } Weights;
 
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         // 1. If already moving, don't pick a new direction
 
         int x = position.x;
         int y = position.y;
         
         // Calculate current forward vector
-        int dirX = (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
-        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
+        int dirX = (position.direction == Direction::Right) - (position.direction == Direction::Left);
+        int dirY = (position.direction == Direction::Down) - (position.direction == Direction::Up);
 
         // This is your specific logic: If there's a side-path available...
         if (MovementSystem::HasReachedNode(position, movement) && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !movement.isChasing) {
-            std::cout << "turn?" << std::endl;
             const std::pair<int, int> dirs[4] = {{0,-1}, {1,0}, {0,1}, {-1,0}};
 
             std::vector<Choice> weightedChoices;
@@ -209,7 +219,7 @@ public:
         }
         
         if(!bb.level[y + dirY][x + dirX].isWalkable){
-            movement.direction = static_cast<Direction>((movement.direction + 2) % 4);
+            position.direction = static_cast<Direction>((position.direction + 2) % 4);
             dirX *=-1;
             dirY *= -1;
         }
@@ -232,7 +242,7 @@ public:
 class PredictPlayersTurn : public Node
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         if(MovementSystem::HasReachedNode(position, movement) && position.x == movement.LastSeenPlayerX && position.y == movement.LastSeenPlayerY && movement.isChasing){
             movement.LastSeenPlayerX = -1;
             movement.LastSeenPlayerY = -1;
@@ -247,17 +257,11 @@ public:
 class ClaymoreTriggerNode : public Node
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
-        int dirX = (movement.direction == Direction::Right) - (movement.direction == Direction::Left);
-        int dirY = (movement.direction == Direction::Down) - (movement.direction == Direction::Up);
-        int checkX = position.x + dirX;
-        int checkY = position.y + dirY;
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        int originX = position.x;
+        int originY = position.y;
 
-        if (checkX < 0 || checkX >= bb.columns || checkY < 0 || checkY >= bb.rows) {
-            return NodeStatus::FAILURE;
-        }
-
-        const GridCell* cell = bb.entityManager.GetGridCell(checkX, checkY);
+        const GridCell* cell = bb.entityManager.GetGridCell(originX, originY);
         if (cell == nullptr) {
             return NodeStatus::FAILURE;
         }
@@ -265,7 +269,11 @@ public:
         std::vector<int> toRemove;
         for (int slot = 0; slot < 3; ++slot) {
             int id = cell->entityIDs[slot];
-            if (id > bb.entityManager.GetPlayer().ID && bb.entityManager.GetEntityById(id)->actorType == ActorType::DinamicActor) {
+            if (id < 0 || id == entityID) {
+                continue;
+            }
+            auto entityPtr = bb.entityManager.GetEntityById(id);
+            if (entityPtr && id > bb.entityManager.GetPlayer().ID && entityPtr->actorType == ActorType::DinamicActor) {
                 toRemove.push_back(id);
             }
         }
@@ -277,7 +285,7 @@ public:
         for (int id : toRemove) {
             bb.entityManager.RequestRemoveEntityByID(id);
         }
-        
+
         bb.entityManager.RequestRemoveEntityByID(entityID);
 
         return NodeStatus::SUCCESS;
@@ -287,7 +295,7 @@ public:
 class WallChargeDetonateNode : public Node
 {
 public:
-    NodeStatus Tick(int entityID, const PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         if (staticComp.timer > 0) {
             staticComp.timer -= 1;
             return NodeStatus::RUNNING;
@@ -335,31 +343,22 @@ public:
 
 //NEEDS CHECKING AND REWORKING
 
-// ============================================================================
-// SHARED TARGET INFORMATION NODES (For AdvancedEnemy and CommandoEnemy)
-// ============================================================================
+//nodes for passing target info
 
-/// ShareTargetInformationNode
-/// This node implements cooperative target sharing for advanced enemy types.
-/// It allows enemies to communicate the player's last known location.
-/// Extensible for CommandoType where one enemy can act as commander.
-/*
 class ShareTargetInformationNode : public Node
 {
 private:
-    int tickCounter = 0;
     
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        tickCounter++;
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
         
-        // Check if this enemy has visual on the player
-        if (actor.DinamicEntity.isChasing) {
-            actor.advancedEnemyBB->ShareTargetInformation(
-            actor.entityID,
-            actor.DinamicEntity.LastSeenPlayerX,
-            actor.DinamicEntity.LastSeenPlayerY,
-            tickCounter);
+        if (movement.isChasing) {
+            bb.entityManager.advancedEnemyBlackboard.ShareTargetInformation(
+            entityID,
+            movement.LastSeenPlayerX,
+            movement.LastSeenPlayerY,
+            true);
+            std::cout << "passed target info" << std::endl;
             return NodeStatus::SUCCESS;
         }
         
@@ -367,30 +366,37 @@ public:
     }
 };
 
-/// UseSharedTargetInformationNode
-/// This node allows advanced enemies to use target information shared by teammates.
-/// If this enemy hasn't spotted the player but a teammate has, it uses that information.
 class UseSharedTargetInformationNode : public Node
 {
 public:
-    NodeStatus Tick(Actor &actor, Blackboard& bb) override {
-        // Only use shared information if not already chasing
-        if (!actor.DinamicEntity.isChasing) {
-            SharedTargetInfo target = actor.advancedEnemyBB->GetLatestSharedTarget();
-            
-            // If teammates have spotted the player, use that information
-            if (target.lastSeenX >= 0 && target.lastSeenY >= 0) {
-                actor.DinamicEntity.goalX = target.lastSeenX;
-                actor.DinamicEntity.goalY = target.lastSeenY;
-                actor.DinamicEntity.LastSeenPlayerX = target.lastSeenX;
-                actor.DinamicEntity.LastSeenPlayerY = target.lastSeenY;
-                actor.DinamicEntity.isChasing = true;
-                return NodeStatus::SUCCESS;
-            }
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        SharedTargetInfo target = bb.entityManager.advancedEnemyBlackboard.GetLatestSharedTarget();
+
+        if (target.lastSeenX != movement.goalX && target.lastSeenY != movement.goalY && bb.entityManager.advancedEnemyBlackboard.sharedTarget.isValidInfo) {
+            movement.goalX = target.lastSeenX;
+            movement.goalY = target.lastSeenY;
+            movement.LastSeenPlayerX = target.lastSeenX;
+            movement.LastSeenPlayerY = target.lastSeenY;
+            movement.isChasing = true;
+            std::cout << "used target info" << std::endl;
+            return NodeStatus::SUCCESS;
+
         }
         
         return NodeStatus::FAILURE;
     }
 };
 
-*/
+class UpdateSharedData : public Node
+{
+public:
+    NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
+        bb.entityManager.advancedEnemyBlackboard.ShareTargetInformation(
+            entityID,
+            movement.LastSeenPlayerX,
+            movement.LastSeenPlayerY,
+            false);
+            std::cout << "no target on the position" << std::endl;
+        return NodeStatus::SUCCESS;
+    }
+};

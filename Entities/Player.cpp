@@ -50,23 +50,28 @@ void Player::Move(){
     float dirX = dx == 0 ? 0.0f : (dx > 0 ? 1.0f : -1.0f);
     float dirY = dy == 0 ? 0.0f : (dy > 0 ? 1.0f : -1.0f);
 
-    visualX += dirX * step;
-    visualY += dirY * step;
+    float moveX = dirX * step;
+    float moveY = dirY * step;
+    if (dx != 0 && std::abs(moveX) > std::abs(targetX - visualX)) {
+        moveX = targetX - visualX;
+    }
+    if (dy != 0 && std::abs(moveY) > std::abs(targetY - visualY)) {
+        moveY = targetY - visualY;
+    }
+
+    visualX += moveX;
+    visualY += moveY;
 
     if (dx == 0) visualX = float(xPosition);
     if (dy == 0) visualY = float(yPosition);
 
-    if (dx != 0 && std::abs(visualX - targetX) < 0.2f) {
+    if (dx != 0 && std::abs(visualX - targetX) < 0.001f) {
         visualX = float(targetX);
         xPosition = targetX;
     }
-    if (dy != 0 && std::abs(visualY - targetY) < 0.2f) {
+    if (dy != 0 && std::abs(visualY - targetY) < 0.001f) {
         visualY = float(targetY);
         yPosition = targetY;
-    }
-
-    if (ID == -1 && (xPosition != originalX || yPosition != originalY)) {
-        ID = 0;
     }
 }
 
@@ -93,15 +98,15 @@ void Player::UseAbility(){
 
         switch (ability.type) {
             case AbilityType::Claymore: {
-                Actor claymore = blackboard->entityFactory.CreateStaticEntity(this->GetPositionX() + dirX, this->GetPositionY() + dirY, direction, EntityType::Claymore);
-                blackboard->entityManager.RequestAddEnemy(std::move(claymore));
-                used = true;
+                if (frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && blackboard->level[frontY][frontX].isWalkable) {
+                    blackboard->entityManager.AddEntity(frontX, frontY, direction, EntityType::Claymore);
+                    used = true;
+                }
                 break;
             }
             case AbilityType::WallCharge: {
                 if(frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && !blackboard->level[frontY][frontX].isWalkable){
-                    Actor charge = blackboard->entityFactory.CreateStaticEntity(frontX, frontY, direction, EntityType::WallCharge);
-                    blackboard->entityManager.RequestAddEnemy(std::move(charge));
+                    blackboard->entityManager.AddEntity(frontX, frontY, direction, EntityType::WallCharge);
                     used = true;
                 }
                 break;
@@ -121,8 +126,8 @@ void Player::UseAbility(){
                 break;
             }
             case AbilityType::Invisibility: {
-                if(this->ID != -1){
-                    this->ID = -1;
+                if (!isInvisible) {
+                    isInvisible = true;
                     ability.durationRemaining = ability.duration;
                     used = true;
                 }
@@ -163,9 +168,7 @@ void Player::UpdateAbilitiesCooldown(float deltaTime){
                         speedModifier = 1.0f;
                         break;
                     case AbilityType::Invisibility:
-                        if(ID == -1){
-                            ID = 0;
-                        }
+                        isInvisible = false;
                         break;
                     default:
                         break;
@@ -192,10 +195,10 @@ Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> moveme
     visualX = x;
     visualY = y;
 
-    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
-    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
+    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Invisibility);
+    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::Claymore);
     abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
-    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
+    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::SpeedBoost);
 
 }
 

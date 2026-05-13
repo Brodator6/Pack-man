@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Player.h"
-#include "Actor.h"
 #include "../TileData.h"
 #include "../DataStructs.h"
 #include "EntityManager.h"

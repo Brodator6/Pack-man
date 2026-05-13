@@ -41,11 +41,11 @@ add_executable(Pac-Man
     GUI/Windows/AbilityMenu.cpp
     GUI/Elements/GUIElement.cpp
     GUI/Windows/MenuManager.cpp
+    GUI/Windows/ResultsMenu.cpp
     Entities/GameMaganer.cpp
     Entities/AI/AIUtils.cpp
     Entities/Entity.cpp
     Entities/Player.cpp
-    Entities/Actor.cpp
     Entities/Pathfinding/Pathfinding.cpp
     Entities/EntityManager.cpp
     Entities/Systems.cpp

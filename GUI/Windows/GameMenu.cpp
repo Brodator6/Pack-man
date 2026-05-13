@@ -1,10 +1,10 @@
 #include "GameMenu.h"
 
 #include "../../Entities/Player.h"
-#include "../../Entities/Actor.h"
 #include "../../TileSystem.h"
-#include "PauseMenu.h"
+#include "PauseMenu.h" 
 #include "AbilityMenu.h"
+#include "ResultsMenu.h"
 
 
 void GameMenu::DrawWindow(){
@@ -66,10 +66,13 @@ void GameMenu::HandleGameLogic(){
     accumulator += timeBlackboard.currentTime - timeBlackboard.previousTickTime;    
     while(accumulator >= timeBlackboard.deltaTime){
         scoreText.UpdateTextTexture(("Score: " + std::to_string(gameManager.entityManager.GetPlayer().score)), font, textColor);
-        if(gameManager.lost){
-            menus->PushMenu(std::make_unique<MainMenu>(menus, menuBlackboard, timeBlackboard));
-        }
+
         gameManager.HandleGameLogic();
+        
+        if(gameManager.lost){
+            ResultDataBlackboard transferData = {"You Have Lost", 0};
+            menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToMainMenu()));
+        }
         accumulator -= timeBlackboard.deltaTime;
     }
 
@@ -85,7 +88,8 @@ std::function<void()> GameMenu::ToMainMenu(){
 }
 
 GameMenu::GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : GUI(menus, mBB, tBB), gameManager{*mBB.renderer, tBB}{
-
+    timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
+    timeBlackboard.previousTickTime = timeBlackboard.currentTime;
     abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer);
     abilityIcon2.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer);
     abilityIcon3.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[2], *menuBlackboard.renderer);

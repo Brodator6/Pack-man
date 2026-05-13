@@ -24,12 +24,14 @@ void AISystem::Update(std::unordered_map<int, AIComponent>& aiComponents,
             auto typeIt = typeComponents.find(entityID);
             auto staticIt = staticComponents.find(entityID);
 
-            if (posIt != posComponents.end() && moveIt != moveComponents.end() && typeIt != typeComponents.end()) {
+            if (posIt != posComponents.end() && typeIt != typeComponents.end()) {
                 // For static entities, staticComp may not exist, so provide a dummy if not found
                 StaticEntityComponent dummyStatic = {0, 0};
                 StaticEntityComponent& staticComp = (staticIt != staticComponents.end()) ? staticIt->second : dummyStatic;
+                MovementComponent dummyMove = {0, 0, 1.0f, 0, 0, -1, -1, false};
+                MovementComponent& move = (moveIt != moveComponents.end()) ? moveIt->second : dummyMove;
 
-                aiComp.AI->Tick(entityID, posIt->second, moveIt->second, aiComp, typeIt->second, staticComp, blackboard);
+                aiComp.AI->Tick(entityID, posIt->second, move, aiComp, typeIt->second, staticComp, blackboard);
             }
         }
     }
@@ -65,14 +67,14 @@ bool MovementSystem::HasReachedNode(const PositionComponent& pos, MovementCompon
     return pos.visualX == float(pos.x) && pos.visualY == float(pos.y);
 }
 
-void MovementSystem::SetTargetDirection(const PositionComponent& pos, MovementComponent& move, int targetX, int targetY) {
+void MovementSystem::SetTargetDirection(PositionComponent& pos, MovementComponent& move, int targetX, int targetY) {
     int dx = targetX - pos.x;
     int dy = targetY - pos.y;
 
-    if (dx > 0) move.direction = Direction::Right;
-    else if (dx < 0) move.direction = Direction::Left;
-    else if (dy > 0) move.direction = Direction::Down;
-    else if (dy < 0) move.direction = Direction::Up;
+    if (dx > 0) pos.direction = Direction::Right;
+    else if (dx < 0) pos.direction = Direction::Left;
+    else if (dy > 0) pos.direction = Direction::Down;
+    else if (dy < 0) pos.direction = Direction::Up;
 }
 
 void MovementSystem::Move(PositionComponent& pos, MovementComponent& move) {
@@ -80,8 +82,8 @@ void MovementSystem::Move(PositionComponent& pos, MovementComponent& move) {
     int dy = move.targetY - pos.y;
 
     float step = 0.2f * move.speedModifier;
-    float dirX = (move.direction == Direction::Right) - (move.direction == Direction::Left);
-    float dirY = (move.direction == Direction::Down) - (move.direction == Direction::Up);
+    float dirX = (pos.direction == Direction::Right) - (pos.direction == Direction::Left);
+    float dirY = (pos.direction == Direction::Down) - (pos.direction == Direction::Up);
     pos.visualX += dirX * step;
     pos.visualY += dirY * step;
 
@@ -104,10 +106,8 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
                           SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize) {
     for (auto& [entityID, renderComp] : renderComponents) {
         auto posIt = posComponents.find(entityID);
-        auto moveIt = moveComponents.find(entityID);
-        if (posIt != posComponents.end() && moveIt != moveComponents.end()) {
+        if (posIt != posComponents.end()) {
             PositionComponent& pos = posIt->second;
-            MovementComponent& move = moveIt->second;
             renderComp.rect.x = heightMargin + pos.visualX * cellHeight + 5;
             renderComp.rect.y = widthMargin + pos.visualY * cellWidth + 5;
             renderComp.rect.w = squareSize - 10;
@@ -115,9 +115,9 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
             SDL_RenderFillRect(renderer, &renderComp.rect);
             SDL_RenderTextureRotated(renderer, renderComp.texture.get(), NULL, &renderComp.rect, 
-                                     (0.0 + ((move.direction == Direction::Down) * 90.0) + 
-                                      ((move.direction == Direction::Left) * 180.0) + 
-                                      ((move.direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+                                     (0.0 + ((pos.direction == Direction::Down) * 90.0) + 
+                                      ((pos.direction == Direction::Left) * 180.0) + 
+                                      ((pos.direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
         }
     }
 }

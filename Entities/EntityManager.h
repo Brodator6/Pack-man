@@ -1,34 +1,10 @@
 #pragma once
-#include "Actor.h"
 #include "Player.h"
 #include "../DataStructs.h"
 #include "Components.h"
 #include "Systems.h"
 #include <unordered_map>
 
-// ============================================================================
-// ENTITY MANAGER - ECS Container & Coordinator
-// ============================================================================
-// This manager stores all components in separate maps indexed by entity ID.
-// 
-// Entity ID Scheme:
-//   - 0 = Player
-//   - 1, 2, 3, ... = Enemies/Traps (dynamic entities)
-//
-// Component Architecture (Data-Oriented Design):
-//   * Entities are just IDs (integers)
-//   * Components store pure data, organized in maps by entity ID
-//   * Systems iterate through components to implement game logic
-//
-// Game Loop:
-//   EntityManager::UpdateAI()      → Runs AI behavior trees
-//   EntityManager::UpdateMovement()  → Updates entity positions
-//   EntityManager::UpdateRender()    → Renders all entities
-//
-// Example: Get all data for entity 5
-//   auto& pos = positionComponents[5];
-//   auto& move = movementComponents[5];
-//   auto& render = renderComponents[5];
 
 struct TempEntity {
     ActorType actorType;
@@ -39,9 +15,7 @@ class EntityManager
 {
 private:
     Player player = Player();
-    Blackboard *bb;
-    AdvancedEnemyBlackboard advancedEnemyBlackboard;
-    CommandoEnemyBlackboard commandoEnemyBlackboard;
+    Blackboard *blackboard;
     
     std::vector<int> removalQueue = {};
 
@@ -61,9 +35,13 @@ private:
     MovementSystem movementSystem;
     RenderSystem renderSystem;
 public:
+    Grid pathfindingGrid;
+    AdvancedEnemyBlackboard advancedEnemyBlackboard;
+    CommandoEnemyBlackboard commandoEnemyBlackboard;
     std::vector<GridCell> shadowGrid;
     
     void UpdateShadowGrid();
+    void UpdatePathfindingGrid();
     TempEntity* GetEntityById(int entityID);
     const GridCell* GetGridCell(int x, int y) const;
     
@@ -72,12 +50,15 @@ public:
     std::unordered_map<int, MovementComponent>& GetMovementComponents() { return movementComponents; }
     std::unordered_map<int, RenderComponent>& GetRenderComponents() { return renderComponents; }
     std::unordered_map<int, TypeComponent>& GetTypeComponents() { return typeComponents; }
+    std::unordered_map<int, AIComponent>& GetAIComponents() { return aiComponents; }
+    std::unordered_map<int, StaticEntityComponent>& GetStaticComponents() { return staticComponents; }
+    std::unordered_map<int, BlackboardComponent>& GetBlackboardComponents() { return blackboardComponents; }
+    int AllocateEntityID() { return kEnemyEntityIdOffset + static_cast<int>(positionComponents.size()); }
     
-    void RequestAddEnemy(Actor newEnemy);
+    void AddEntity(int x, int y, Direction direction, EntityType type);
     void SetPlayer(Player newPlayer);
     void RequestRemoveEntityByID(int entityID);
 
-    void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize, Actor &actor);
     void MoveEntity();
 
     void UpdateState();
