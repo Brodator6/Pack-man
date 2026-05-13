@@ -18,7 +18,7 @@ public:
     int yPosition;
     std::shared_ptr<SDL_Texture> texture;
     ActorType actorType = ActorType::None;
-    Direction direction;
+    EntityDirection direction;
     
     int GetPositionX() const;
     int GetPositionY() const;

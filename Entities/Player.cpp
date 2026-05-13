@@ -20,19 +20,19 @@ bool Player::HasReachedNode() const {
 void Player::UpdateMovement(std::vector<std::vector<TileData>> &level, int rows, int columns){
     if (this->HasReachedNode()) {
         if(this->controls[SDL_SCANCODE_DOWN] == true){
-            this->direction = Direction::Down;
+            this->direction = EntityDirection::Down;
             this->SetTargetPosition(this->GetPositionX(),
             this->GetPositionY() + ((IsWalkable(level[(this->GetPositionY() + 1) % rows][this->GetPositionX()]))) - ((this->GetPositionY() >= rows - 1) * rows));
         }else if(this->controls[SDL_SCANCODE_RIGHT] == true){
-            this->direction = Direction::Right;
+            this->direction = EntityDirection::Right;
             this->SetTargetPosition(this->GetPositionX() + ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() + 1) % columns])))  - ((this->GetPositionX() >= columns - 1) * columns),
             this->GetPositionY());
         }else if(this->controls[SDL_SCANCODE_UP] == true){
-            this->direction = Direction::Up;
+            this->direction = EntityDirection::Up;
             this->SetTargetPosition(this->GetPositionX(),
             this->GetPositionY() - ((IsWalkable(level[(this->GetPositionY() - 1 + rows) % rows][this->GetPositionX()])))  + ((this->GetPositionY() <= 0) * rows));
         }else if(this->controls[SDL_SCANCODE_LEFT] == true){
-            this->direction = Direction::Left;
+            this->direction = EntityDirection::Left;
             this->SetTargetPosition(this->GetPositionX() - ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() - 1 + columns) % columns])))  + ((this->GetPositionX() <= 0) * columns),
             this->GetPositionY());
         }
@@ -90,8 +90,8 @@ void Player::UseAbility(){
             continue;
         }
 
-        int dirX = (direction == Direction::Right) - (direction == Direction::Left);
-        int dirY = (direction == Direction::Down) - (direction == Direction::Up);
+        int dirX = (direction == EntityDirection::Right) - (direction == EntityDirection::Left);
+        int dirY = (direction == EntityDirection::Down) - (direction == EntityDirection::Up);
         int frontX = this->GetPositionX() + dirX;
         int frontY = this->GetPositionY() + dirY;
         bool used = false;
@@ -185,7 +185,7 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
     this->rect.h = squareSize - 10;
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderFillRect(renderer, &this->rect);
-    SDL_RenderTextureRotated(renderer, texture.get(), NULL, &rect, (0.0 + ((direction == Direction::Down) * 90.0) + ((direction == Direction::Left) * 180.0) + ((direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+    SDL_RenderTextureRotated(renderer, texture.get(), NULL, &rect, (0.0 + ((direction == EntityDirection::Down) * 90.0) + ((direction == EntityDirection::Left) * 180.0) + ((direction == EntityDirection::Up) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
 Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> movement):Entity{x, y}, blackboard{bb}, controls{movement} {

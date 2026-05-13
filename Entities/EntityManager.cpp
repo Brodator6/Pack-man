@@ -94,15 +94,15 @@ EntityManager::~EntityManager(){
 
 void EntityManager::SetUp(Blackboard &bb){
     this->blackboard = &bb;
-    player = bb.entityFactory.CreatePlayer(8, 8, Direction::Up, bb);
-    AddEntity(2, 2, Direction::Down, EntityType::AdvancedEnemy);
-    AddEntity(9, 10, Direction::Down, EntityType::AdvancedEnemy);
+    player = bb.entityFactory.CreatePlayer(8, 8, EntityDirection::Up, bb);
+    AddEntity(2, 2, EntityDirection::Down, EntityType::AdvancedEnemy);
+    AddEntity(9, 10, EntityDirection::Down, EntityType::AdvancedEnemy);
     shadowGrid.resize(bb.rows * bb.columns);
     UpdateShadowGrid();
     //pathfindingGrid = Grid::GenerateGrid(&bb.level);
 }
 
-void EntityManager::AddEntity(int x, int y, Direction direction, EntityType type) {
+void EntityManager::AddEntity(int x, int y, EntityDirection direction, EntityType type) {
     if (!blackboard) return;
     if (type == EntityType::Claymore || type == EntityType::WallCharge) {
         blackboard->entityFactory.CreateAndAddStaticEntity(x, y, direction, type);

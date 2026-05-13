@@ -28,7 +28,7 @@ void AISystem::Update(std::unordered_map<int, AIComponent>& aiComponents,
                 // For static entities, staticComp may not exist, so provide a dummy if not found
                 StaticEntityComponent dummyStatic = {0, 0};
                 StaticEntityComponent& staticComp = (staticIt != staticComponents.end()) ? staticIt->second : dummyStatic;
-                MovementComponent dummyMove = {0, 0, 1.0f, 0, 0, -1, -1, false};
+                MovementComponent dummyMove = {0, 0, 1.0f, 0, 0, -1, -1, EntityDirection::Down, false};
                 MovementComponent& move = (moveIt != moveComponents.end()) ? moveIt->second : dummyMove;
 
                 aiComp.AI->Tick(entityID, posIt->second, move, aiComp, typeIt->second, staticComp, blackboard);
@@ -71,10 +71,10 @@ void MovementSystem::SetTargetDirection(PositionComponent& pos, MovementComponen
     int dx = targetX - pos.x;
     int dy = targetY - pos.y;
 
-    if (dx > 0) pos.direction = Direction::Right;
-    else if (dx < 0) pos.direction = Direction::Left;
-    else if (dy > 0) pos.direction = Direction::Down;
-    else if (dy < 0) pos.direction = Direction::Up;
+    if (dx > 0) pos.direction = EntityDirection::Right;
+    else if (dx < 0) pos.direction = EntityDirection::Left;
+    else if (dy > 0) pos.direction = EntityDirection::Down;
+    else if (dy < 0) pos.direction = EntityDirection::Up;
 }
 
 void MovementSystem::Move(PositionComponent& pos, MovementComponent& move) {
@@ -82,8 +82,8 @@ void MovementSystem::Move(PositionComponent& pos, MovementComponent& move) {
     int dy = move.targetY - pos.y;
 
     float step = 0.2f * move.speedModifier;
-    float dirX = (pos.direction == Direction::Right) - (pos.direction == Direction::Left);
-    float dirY = (pos.direction == Direction::Down) - (pos.direction == Direction::Up);
+    float dirX = (pos.direction == EntityDirection::Right) - (pos.direction == EntityDirection::Left);
+    float dirY = (pos.direction == EntityDirection::Down) - (pos.direction == EntityDirection::Up);
     pos.visualX += dirX * step;
     pos.visualY += dirY * step;
 
@@ -115,9 +115,9 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
             SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
             SDL_RenderFillRect(renderer, &renderComp.rect);
             SDL_RenderTextureRotated(renderer, renderComp.texture.get(), NULL, &renderComp.rect, 
-                                     (0.0 + ((pos.direction == Direction::Down) * 90.0) + 
-                                      ((pos.direction == Direction::Left) * 180.0) + 
-                                      ((pos.direction == Direction::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+                                     (0.0 + ((pos.direction == EntityDirection::Down) * 90.0) + 
+                                      ((pos.direction == EntityDirection::Left) * 180.0) + 
+                                      ((pos.direction == EntityDirection::Up) * 270.0)), NULL, SDL_FLIP_NONE);
         }
     }
 }

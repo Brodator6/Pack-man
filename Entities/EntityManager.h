@@ -55,7 +55,7 @@ public:
     std::unordered_map<int, BlackboardComponent>& GetBlackboardComponents() { return blackboardComponents; }
     int AllocateEntityID() { return kEnemyEntityIdOffset + static_cast<int>(positionComponents.size()); }
     
-    void AddEntity(int x, int y, Direction direction, EntityType type);
+    void AddEntity(int x, int y, EntityDirection direction, EntityType type);
     void SetPlayer(Player newPlayer);
     void RequestRemoveEntityByID(int entityID);
 

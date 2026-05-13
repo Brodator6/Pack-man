@@ -91,8 +91,8 @@ class FindTarget : public Node
 {
 public:
     NodeStatus Tick(int entityID, PositionComponent& position, MovementComponent& movement, AIComponent &Ai, const TypeComponent& type, StaticEntityComponent& staticComp, Blackboard& bb) override {
-        int dirX =  (position.direction == Direction::Right) - (position.direction == Direction::Left);
-        int dirY = (position.direction == Direction::Down) - (position.direction == Direction::Up);
+        int dirX =  (position.direction == EntityDirection::Right) - (position.direction == EntityDirection::Left);
+        int dirY = (position.direction == EntityDirection::Down) - (position.direction == EntityDirection::Up);
 
         int checkX = position.x;
         int checkY = position.y;
@@ -114,6 +114,7 @@ public:
                     movement.goalY = checkY;
                     movement.LastSeenPlayerX = checkX;
                     movement.LastSeenPlayerY = checkY;
+                    movement.lastSeenDirection = bb.entityManager.GetPlayer().direction;
                     if(!movement.isChasing){
                         std::cout << "chasing player" << std::endl;
                     }
@@ -136,8 +137,8 @@ public:
         Grid gameGrid;
         gameGrid = Grid::GenerateGrid(&bb.level);
 
-        int dirX = (position.direction == Direction::Right) - (position.direction == Direction::Left);
-        int dirY = (position.direction == Direction::Down) - (position.direction == Direction::Up);
+        int dirX = (position.direction == EntityDirection::Right) - (position.direction == EntityDirection::Left);
+        int dirY = (position.direction == EntityDirection::Down) - (position.direction == EntityDirection::Up);
 
         APAthFinding pathFinding;
         Ai.currentPath = pathFinding.FindPath({position.x + dirX, position.y + dirY}, {movement.goalX, movement.goalY}, &gameGrid);
@@ -167,8 +168,8 @@ public:
         int y = position.y;
         
         // Calculate current forward vector
-        int dirX = (position.direction == Direction::Right) - (position.direction == Direction::Left);
-        int dirY = (position.direction == Direction::Down) - (position.direction == Direction::Up);
+        int dirX = (position.direction == EntityDirection::Right) - (position.direction == EntityDirection::Left);
+        int dirY = (position.direction == EntityDirection::Down) - (position.direction == EntityDirection::Up);
 
         // This is your specific logic: If there's a side-path available...
         if (MovementSystem::HasReachedNode(position, movement) && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !movement.isChasing) {
@@ -219,7 +220,7 @@ public:
         }
         
         if(!bb.level[y + dirY][x + dirX].isWalkable){
-            position.direction = static_cast<Direction>((position.direction + 2) % 4);
+            position.direction = static_cast<EntityDirection>((position.direction + 2) % 4);
             dirX *=-1;
             dirY *= -1;
         }
@@ -357,6 +358,7 @@ public:
             entityID,
             movement.LastSeenPlayerX,
             movement.LastSeenPlayerY,
+            movement.lastSeenDirection,
             true);
             std::cout << "passed target info" << std::endl;
             return NodeStatus::SUCCESS;
@@ -395,6 +397,7 @@ public:
             entityID,
             movement.LastSeenPlayerX,
             movement.LastSeenPlayerY,
+            movement.lastSeenDirection,
             false);
             std::cout << "no target on the position" << std::endl;
         return NodeStatus::SUCCESS;

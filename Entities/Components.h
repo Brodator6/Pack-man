@@ -36,18 +36,69 @@ enum class EntityType {
     None
 };
 
-enum Direction {
+enum EntityDirection {
     Left = 0,
     Up = 1,
     Right = 2,
     Down = 3
 };
 
-// ============================================================================
-// COMPONENTS - Pure Data Structures (ECS)
-// ============================================================================
-// Components have NO METHODS. They are just data containers.
-// Systems will read/write these components to implement game logic.
+//needs reworking
+// Structure to hold shared target information between AI agents of the same type
+struct SharedTargetInfo {
+    int lastSeenX = -1;
+    int lastSeenY = -1;
+    int lastSeenDirection = EntityDirection::Down;
+    int reporterID = -1;  // Which enemy reported this position
+    bool isValidInfo = false; // How recent is this information
+};
+
+// Base blackboard for enemies with cooperative behavior
+struct AdvancedEnemyBlackboard {
+    // List of IDs belonging to members that can use shared blackboard
+    std::vector<int> MemberIDs;
+    
+    // Shared target information accessible to all advanced enemies
+    SharedTargetInfo sharedTarget;
+    
+    // Find or create entry for an enemy
+    int GetOrCreateEnemyIndex(int enemyID) {
+        for (size_t i = 0; i < MemberIDs.size(); ++i) {
+            if (MemberIDs[i] == enemyID) return i;
+        }
+        MemberIDs.push_back(enemyID);
+        return MemberIDs.size() - 1;
+    }
+    
+    // Update shared target information
+    void ShareTargetInformation(int enemyID, int playerX, int playerY, EntityDirection direction, bool dataValidity) {
+        sharedTarget.lastSeenX = playerX;
+        sharedTarget.lastSeenY = playerY;
+        sharedTarget.lastSeenDirection = direction;
+        sharedTarget.reporterID = enemyID;
+        sharedTarget.isValidInfo = dataValidity;
+    }
+    
+    // Get the most recent target information from all allies
+    SharedTargetInfo GetLatestSharedTarget() {
+        return sharedTarget;
+    }
+};
+
+// Extended blackboard for Commando enemies (future extension)
+// Will have a commander that collects and coordinates information
+struct CommandoEnemyBlackboard : public AdvancedEnemyBlackboard{
+    // Commander ID (-1 if not assigned)
+    int commanderID = -1;
+    int commandTickCount = 0;
+    
+    // Commander election based on ticks
+    void UpdateCommanderElection(int tickCount) {
+        commandTickCount = tickCount;
+    }
+};
+
+
 
 /// **PositionComponent**
 /// Stores where an entity is in the game world
@@ -56,7 +107,7 @@ enum Direction {
 struct PositionComponent {
     int x, y;                    // Actual grid position
     float visualX, visualY;      // Visual position for smooth movement animation
-    Direction direction;         // Which way entity is facing
+    EntityDirection direction;         // Which way entity is facing
 };
 
 /// **MovementComponent**
@@ -68,6 +119,7 @@ struct MovementComponent {
     float speedModifier;         // 1.0 = normal, 0.5 = half speed, 2.0 = double
     int goalX, goalY;            // Final destination (for pathfinding)
     int LastSeenPlayerX, LastSeenPlayerY;  // Last known player position
+    EntityDirection lastSeenDirection;
     bool isChasing;              // Is this enemy currently chasing player?
 };
 
@@ -87,7 +139,7 @@ struct AIComponent {
 struct RenderComponent {
     std::shared_ptr<SDL_Texture> texture;
     SDL_FRect rect;
-    // Direction stored in MovementComponent (no duplication)
+    // EntityDirection stored in MovementComponent (no duplication)
 };
 
 /// **BlackboardComponent**

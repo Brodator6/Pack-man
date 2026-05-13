@@ -85,7 +85,7 @@ private:
     }
 
 public:
-    void CreateAndAddDynamicEnemy(int x, int y, Direction direction, EntityType type) {
+    void CreateAndAddDynamicEnemy(int x, int y, EntityDirection direction, EntityType type) {
         if (!blackboard) return;
 
         auto& entityManager = blackboard->entityManager;
@@ -99,7 +99,7 @@ public:
 
         positionComponents[entityID] = {x, y, static_cast<float>(x), static_cast<float>(y), direction};
         renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/testSprite.png"), SDL_FRect{0, 0, 0, 0}};
-        movementComponents[entityID] = {x, y, 1.0f, x, y, -1, -1, false};
+        movementComponents[entityID] = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
 
         EnemyType enemyType = EnemyType::None;
         std::unique_ptr<SelectorNode> AI;
@@ -133,7 +133,7 @@ public:
         }
     }
 
-    void CreateAndAddStaticEntity(int x, int y, Direction direction, EntityType type) {
+    void CreateAndAddStaticEntity(int x, int y, EntityDirection direction, EntityType type) {
         if (!blackboard) return;
 
         auto& entityManager = blackboard->entityManager;
@@ -167,7 +167,7 @@ public:
         aiComponents[entityID] = {{}, std::move(root), EnemyType::None};
     }
 
-    Player CreatePlayer(int x, int y, Direction direction, Blackboard &bb){
+    Player CreatePlayer(int x, int y, EntityDirection direction, Blackboard &bb){
         Player player = Player (x, y, &bb);
         player.direction = direction;
         player.SetTexture(textureManager.getTexture("./Assets/Sprites/testSprite.png"));

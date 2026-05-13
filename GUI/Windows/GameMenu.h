@@ -30,7 +30,7 @@ private:
     int hightMargine = 50;
     int squareSize = 40;
 
-    Text scoreText = Text( 1400, 0, 100, 100, "Score: 0" , font, textColor, (*menuBlackboard.renderer));
+    Text scoreText = Text(1400, 0, 100, 100, "Score: 0" , font, textColor, (*menuBlackboard.renderer));
 
     AbilityIcon abilityIcon1 = AbilityIcon(1400, 100, 200, 200);
     AbilityIcon abilityIcon2 = AbilityIcon(1400, 350, 200, 200);
