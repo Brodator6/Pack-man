@@ -5,7 +5,7 @@ class Text : public GUIElement{//class for GUIElements that will display some me
 private:
     std::string text = "Score: 0";
 public:
-    void DrawElement(SDL_Renderer *renderer){//function to display element
+    void DrawElement(SDL_Renderer *renderer) override{//function to display element
         SDL_RenderTexture(renderer, texture.get(), NULL, &textureRect);
     };
     

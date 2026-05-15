@@ -8,7 +8,7 @@ private:
     Ability *ability = nullptr;
     std::string text = "";
 public:
-    void DrawElement(SDL_Renderer *renderer){//function to display element
+    void DrawElement(SDL_Renderer *renderer) override{//function to display element
         if (!ability || !ability->texture) {
             return;
         }

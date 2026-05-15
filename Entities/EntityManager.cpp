@@ -95,8 +95,9 @@ EntityManager::~EntityManager(){
 void EntityManager::SetUp(Blackboard &bb){
     this->blackboard = &bb;
     player = bb.entityFactory.CreatePlayer(8, 8, EntityDirection::Up, bb);
-    AddEntity(2, 2, EntityDirection::Down, EntityType::AdvancedEnemy);
-    AddEntity(9, 10, EntityDirection::Down, EntityType::AdvancedEnemy);
+    AddEntity(3, 2, EntityDirection::Down, EntityType::BasicEnemy);
+    AddEntity(9, 10, EntityDirection::Down, EntityType::BasicEnemy);
+    AddEntity(1, 3, EntityDirection::Down, EntityType::BasicEnemy);
     shadowGrid.resize(bb.rows * bb.columns);
     UpdateShadowGrid();
     //pathfindingGrid = Grid::GenerateGrid(&bb.level);

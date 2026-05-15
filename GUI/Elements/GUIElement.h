@@ -31,6 +31,8 @@ protected:
 public:
     virtual void DrawElement(SDL_Renderer *renderer){};
 
+    virtual void HandleKey(SDL_Event &Event){};
+
     GUIElement(int x, int y, int w, int h){
         rect.x = x;
         rect.y = y;

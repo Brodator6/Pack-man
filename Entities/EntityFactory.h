@@ -63,7 +63,28 @@ private:
         return root;
     }
 
-    std::unique_ptr<SelectorNode> CreateCommandoAI(){
+    std::unique_ptr<SelectorNode> CreateBasicCommandoAI(){
+        
+        auto root = std::make_unique<SelectorNode>();
+
+        auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
+        root->AddChildNode(std::move(increaseTickCounter));
+
+        auto findAndPlan = std::make_unique<SequenceNode>();
+        findAndPlan->AddChildNode(std::make_unique<FindTarget>());        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(findAndPlan));
+        
+        auto SearchForPlayer = std::make_unique<SequenceNode>();
+        SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
+        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        root->AddChildNode(std::move(SearchForPlayer));
+
+        root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
+
+        return root;
+    }
+
+    std::unique_ptr<SelectorNode> CreateLeaderCommandoAI(){
         
         auto root = std::make_unique<SelectorNode>();
 

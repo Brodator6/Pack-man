@@ -8,13 +8,13 @@ private:
 
 public:
 
-    void DrawElement(SDL_Renderer *renderer){//function to display element
+    void DrawElement(SDL_Renderer *renderer) override{//function to display element
         SDL_SetRenderDrawColor(renderer, elementColor.r + darkening, elementColor.g + darkening, elementColor.b + darkening, elementColor.a);
         SDL_RenderFillRect(renderer, &rect);
         SDL_RenderTexture(renderer, texture.get(), NULL, &textureRect);
     };
 
-    void HandleKey(SDL_Event &Event){//function to handle element event
+    void HandleKey(SDL_Event &Event) override{//function to handle element event
         if(IsWithinRectangle((int)Event.motion.x ,(int)Event.motion.y)){
             darkening = -55;
         }else{

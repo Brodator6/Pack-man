@@ -47,8 +47,6 @@ public:
 
     void HandleGameLogic() override;
 
-    void UpdateState();
-
     std::function<void()> ToMainMenu();
 
     GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB);

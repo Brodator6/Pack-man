@@ -59,8 +59,6 @@ public:
     void SetPlayer(Player newPlayer);
     void RequestRemoveEntityByID(int entityID);
 
-    void MoveEntity();
-
     void UpdateState();
 
     // Get the appropriate blackboard for an enemy
