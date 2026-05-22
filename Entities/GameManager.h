@@ -20,6 +20,13 @@ public:
     EntityFactory entityFactory = EntityFactory();
     EntityManager entityManager;
     AbilityFactory abilityFactory;
+
+    bool lost = false;
+    int globalScore = 0;
+    int scoreGoal = 20;
+    std::string currentLevelPath = "./Assets/Levels/level1.json";
+    std::string currentLevelName = "";
+
     Blackboard blackboard = {
         20, 20,
         level,
@@ -28,15 +35,11 @@ public:
         abilityFactory
     };
 
-    bool lost = false;
-    bool won = false;
-
-
-    void GenerateLevel();
-
+    void GenerateLevel(const std::string &levelPath);
     void HandleGameLogic();
+    void UpdateGameState();
 
-    void UpdateState();
     GameManager(SDL_Renderer *renderer, TimeBlackboard &tBB);
+    GameManager(SDL_Renderer *renderer, TimeBlackboard &tBB, const GameManager &previousManager);
     ~GameManager(){};
 };

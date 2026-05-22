@@ -35,7 +35,9 @@ protected:
 public:
     virtual void DrawWindow(){};
 
-    virtual SDL_AppResult HandleEvents(SDL_Event *Event){};
+    virtual SDL_AppResult HandleEvents(SDL_Event *Event){
+        return SDL_APP_CONTINUE;
+    };
 
     virtual  void HandleGameLogic(){};
     

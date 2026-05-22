@@ -132,6 +132,14 @@ build CMakeFiles/Pac-Man.dir/Entities/GameMaganer.cpp.obj: CXX_COMPILER__Pac-Man
   OBJECT_FILE_DIR = CMakeFiles\Pac-Man.dir\Entities
   TARGET_SUPPORT_DIR = CMakeFiles\Pac-Man.dir
 
+build CMakeFiles/Pac-Man.dir/LevelLoader.cpp.obj: CXX_COMPILER__Pac-Man_unscanned_ D$:/PRG/Pac-man/LevelLoader.cpp || cmake_object_order_depends_target_Pac-Man
+  DEP_FILE = CMakeFiles\Pac-Man.dir\LevelLoader.cpp.obj.d
+  FLAGS = -std=c++17 -Wall -Wextra -Wpedantic
+  INCLUDES = -ID:/PRG/Pac-man/src/SDL_Lib/include -ID:/PRG/Pac-man/src/TTF_Lib/include -ID:/PRG/Pac-man/src/SDL_Image/include
+  OBJECT_DIR = CMakeFiles\Pac-Man.dir
+  OBJECT_FILE_DIR = CMakeFiles\Pac-Man.dir
+  TARGET_SUPPORT_DIR = CMakeFiles\Pac-Man.dir
+
 build CMakeFiles/Pac-Man.dir/Entities/AI/AIUtils.cpp.obj: CXX_COMPILER__Pac-Man_unscanned_ D$:/PRG/Pac-man/Entities/AI/AIUtils.cpp || cmake_object_order_depends_target_Pac-Man
   DEP_FILE = CMakeFiles\Pac-Man.dir\Entities\AI\AIUtils.cpp.obj.d
   FLAGS = -std=c++17 -Wall -Wextra -Wpedantic
@@ -188,7 +196,7 @@ build CMakeFiles/Pac-Man.dir/Entities/Systems.cpp.obj: CXX_COMPILER__Pac-Man_uns
 #############################################
 # Link the executable Pac-Man.exe
 
-build Pac-Man.exe: CXX_EXECUTABLE_LINKER__Pac-Man_ CMakeFiles/Pac-Man.dir/Main.cpp.obj CMakeFiles/Pac-Man.dir/TileSystem.cpp.obj CMakeFiles/Pac-Man.dir/UpdateInput.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/MainMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/GameMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/PauseMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/AbilityMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Elements/GUIElement.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/MenuManager.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/ResultsMenu.cpp.obj CMakeFiles/Pac-Man.dir/Entities/GameMaganer.cpp.obj CMakeFiles/Pac-Man.dir/Entities/AI/AIUtils.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Entity.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Player.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Pathfinding/Pathfinding.cpp.obj CMakeFiles/Pac-Man.dir/Entities/EntityManager.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Systems.cpp.obj | D$:/PRG/Pac-man/src/SDL_Lib/lib/libSDL3.dll.a D$:/PRG/Pac-man/src/TTF_Lib/lib/libSDL3_ttf.dll.a D$:/PRG/Pac-man/src/SDL_Image/lib/x64/SDL3_image.lib
+build Pac-Man.exe: CXX_EXECUTABLE_LINKER__Pac-Man_ CMakeFiles/Pac-Man.dir/Main.cpp.obj CMakeFiles/Pac-Man.dir/TileSystem.cpp.obj CMakeFiles/Pac-Man.dir/UpdateInput.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/MainMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/GameMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/PauseMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/AbilityMenu.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Elements/GUIElement.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/MenuManager.cpp.obj CMakeFiles/Pac-Man.dir/GUI/Windows/ResultsMenu.cpp.obj CMakeFiles/Pac-Man.dir/Entities/GameMaganer.cpp.obj CMakeFiles/Pac-Man.dir/LevelLoader.cpp.obj CMakeFiles/Pac-Man.dir/Entities/AI/AIUtils.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Entity.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Player.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Pathfinding/Pathfinding.cpp.obj CMakeFiles/Pac-Man.dir/Entities/EntityManager.cpp.obj CMakeFiles/Pac-Man.dir/Entities/Systems.cpp.obj | D$:/PRG/Pac-man/src/SDL_Lib/lib/libSDL3.dll.a D$:/PRG/Pac-man/src/TTF_Lib/lib/libSDL3_ttf.dll.a D$:/PRG/Pac-man/src/SDL_Image/lib/x64/SDL3_image.lib
   LINK_LIBRARIES = D:/PRG/Pac-man/src/SDL_Lib/lib/libSDL3.dll.a  D:/PRG/Pac-man/src/TTF_Lib/lib/libSDL3_ttf.dll.a  D:/PRG/Pac-man/src/SDL_Image/lib/x64/SDL3_image.lib  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\Pac-Man.dir
   POST_BUILD = cd .

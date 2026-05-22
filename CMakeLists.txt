@@ -43,6 +43,7 @@ add_executable(Pac-Man
     GUI/Windows/MenuManager.cpp
     GUI/Windows/ResultsMenu.cpp
     Entities/GameMaganer.cpp
+    LevelLoader.cpp
     Entities/AI/AIUtils.cpp
     Entities/Entity.cpp
     Entities/Player.cpp

@@ -6,6 +6,7 @@
 struct ResultDataBlackboard{
     std::string ResultTitle = "Lost";
     int score = 0;
+    int lost = false;
 };
 
 struct GameStateData{
@@ -14,8 +15,12 @@ struct GameStateData{
 
 class ResultsMenu : public GUI{
 private:
-    std::function<void()> menuSwitchFunction;
+    std::function<void()> levelSwitchFunction;
+    Button toNextLevelButton;
+    Button quitButton;
+
     Text resultMenuTitle;
+    Text scoreText;
     ResultDataBlackboard *resultData = nullptr;
     GameStateData * gamestateData = nullptr;
 public:

@@ -49,6 +49,11 @@ SDL_AppResult GameMenu::HandleEvents(SDL_Event *Event){
                 menus->PushMenu(std::make_unique<AbilityMenu>(menus, menuBlackboard, timeBlackboard, abb));
                 break;
             }
+            case SDL_SCANCODE_F3: {
+                ResultDataBlackboard transferData = {"You Have Lost", 100, false};
+                menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
+                break;
+            }
             default: 
                 break;
         }
@@ -70,9 +75,14 @@ void GameMenu::HandleGameLogic(){
         gameManager.HandleGameLogic();
         
         if(gameManager.lost){
-            ResultDataBlackboard transferData = {"You Have Lost", 0};
-            menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToMainMenu()));
+            ResultDataBlackboard transferData = {"You Have Lost", gameManager.globalScore, true};
+            menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
         }
+        if(gameManager.globalScore >= gameManager.scoreGoal){
+            ResultDataBlackboard transferData = {"You Have Won", gameManager.globalScore, false};
+            menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
+        }
+        
         accumulator -= timeBlackboard.deltaTime;
     }
 
@@ -87,7 +97,22 @@ std::function<void()> GameMenu::ToMainMenu(){
     };
 }
 
+std::function<void()> GameMenu::ToTheNextLevel(){
+    return [this](){
+        menus->RequestRootSwap(std::make_unique<GameMenu>(menus, menuBlackboard, timeBlackboard, gameManager));
+    };
+}
+
 GameMenu::GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : GUI(menus, mBB, tBB), gameManager{*mBB.renderer, tBB}{
+    timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
+    timeBlackboard.previousTickTime = timeBlackboard.currentTime;
+    abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer);
+    abilityIcon2.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer);
+    abilityIcon3.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[2], *menuBlackboard.renderer);
+    abilityIcon4.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[3], *menuBlackboard.renderer);
+}
+
+GameMenu::GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB, const GameManager &previousManager) : GUI(menus, mBB, tBB), gameManager{*mBB.renderer, tBB, previousManager}{
     timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
     timeBlackboard.previousTickTime = timeBlackboard.currentTime;
     abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer);

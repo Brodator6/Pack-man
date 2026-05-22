@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <vector>
+#include <unordered_map>
 #include "../TileData.h"
 #include "../DataStructs.h"
 #include "Pathfinding/Pathfinding.h"
@@ -31,6 +32,7 @@ enum class EntityType {
     BasicEnemy,
     AdvancedEnemy,
     CommandoEnemy,
+    CommandoLeaderEnemy,
     Claymore,
     WallCharge,
     None
@@ -87,14 +89,41 @@ struct AdvancedEnemyBlackboard {
 
 // Extended blackboard for Commando enemies (future extension)
 // Will have a commander that collects and coordinates information
+struct CommandoOrder {
+    bool isAssigned = false;
+    int targetX = -1;
+    int targetY = -1;
+    bool holdPosition = false;
+    bool chaseReporter = false;
+};
+
 struct CommandoEnemyBlackboard : public AdvancedEnemyBlackboard{
     // Commander ID (-1 if not assigned)
     int commanderID = -1;
     int commandTickCount = 0;
+
+    // Orders assigned by leader to each commando member
+    std::unordered_map<int, CommandoOrder> orders;
     
     // Commander election based on ticks
     void UpdateCommanderElection(int tickCount) {
         commandTickCount = tickCount;
+    }
+
+    void AssignOrder(int enemyID, const CommandoOrder& order) {
+        orders[enemyID] = order;
+    }
+
+    CommandoOrder GetOrder(int enemyID) const {
+        auto it = orders.find(enemyID);
+        if (it != orders.end()) {
+            return it->second;
+        }
+        return CommandoOrder();
+    }
+
+    void ClearOrders() {
+        orders.clear();
     }
 };
 
@@ -146,9 +175,9 @@ struct RenderComponent {
 /// Reference to shared data structures for multi-agent AI
 /// Allows enemies to communicate target locations, etc.
 struct BlackboardComponent {
-    AdvancedEnemyBlackboard* advancedBB;    // Shared data for advanced enemies
-    CommandoEnemyBlackboard* commandoBB;    // Shared data for commando enemies
+    AdvancedEnemyBlackboard* sharedBB = nullptr;    // Shared data for advanced enemies or commando enemies
 };
+
 
 /// **TypeComponent**
 /// Metadata about entity type
@@ -164,4 +193,14 @@ struct TypeComponent {
 struct StaticEntityComponent {
     int timer;       // Time until effect triggers
     int cooldown;    // Cooldown before next use
+};
+
+struct EnemyBlackboard {
+    int entityID = -1;
+    PositionComponent* position = nullptr;
+    MovementComponent* movement = nullptr;
+    AIComponent* AI = nullptr;
+    TypeComponent* type = nullptr;
+    StaticEntityComponent* staticComp = nullptr;
+    BlackboardComponent* blackboardComponent = nullptr;
 };

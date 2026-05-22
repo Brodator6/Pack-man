@@ -5,6 +5,18 @@ bool IsWalkable(const TileData& tile) {
     return tile.isWalkable;
 }
 
+void ApplyEffect(GameManager &gameManager, TileData& tile) {
+    if (tile.type == SMALL_REWARD) {
+        gameManager.entityManager.GetPlayer().AddScore(tile.score);
+        gameManager.globalScore += tile.score;
+        tile.type = FLOOR; // change to floor after collecting
+        tile.isWalkable = true;
+        tile.score = 0;
+        std::cout << gameManager.entityManager.GetPlayer().GetScore() << std::endl;
+    }
+    // other effects can be added here
+}
+
 void ApplyEffect(Player* player, TileData& tile) {
     if (tile.type == SMALL_REWARD) {
         player->AddScore(tile.score);

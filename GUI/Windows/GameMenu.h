@@ -49,6 +49,9 @@ public:
 
     std::function<void()> ToMainMenu();
 
+    std::function<void()>  ToTheNextLevel();
+
     GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB);
+    GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB, const GameManager &previousManager);
     ~GameMenu();
 };

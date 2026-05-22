@@ -31,6 +31,8 @@ int squareSize = 40;
 SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
 {
     srand(static_cast<unsigned int>(time(0)));
+    int width = 1920;
+    int hight = 1080;
 
     //std::ifstream file("./Assets/Levels/level1.txt");
     //std::cout << file.is_open() << std::endl;
@@ -47,14 +49,14 @@ SDL_AppResult SDL_AppInit(void **appstate, int argc, char *argv[])
         return SDL_APP_FAILURE;
     }
 
-    if (!SDL_CreateWindowAndRenderer("Puck-man", 1920, 880, 0, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Puck-man", width, hight, 0, &window, &renderer)) {
         SDL_Log("Couldn't create window/renderer: %s", SDL_GetError());
         return SDL_APP_FAILURE;
     }
-    SDL_SetRenderLogicalPresentation(renderer, 1920, 880, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    SDL_SetRenderLogicalPresentation(renderer, width, hight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     SDL_SetWindowTitle(window, "sas");
-    menus.SetTheStage(&window, &renderer, 1920, 880);
+    menus.SetTheStage(&window, &renderer, width, hight);
     return SDL_APP_CONTINUE;  /* carry on with the program! */
 }
 

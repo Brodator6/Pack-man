@@ -4,7 +4,7 @@
 class Button : public GUIElement{//class for GUIElements that will perform action on click
 private:
     int darkening = 0;
-    std::function<void()>functionPointer;
+    std::function<void()> functionPointer;
 
 public:
 

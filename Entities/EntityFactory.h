@@ -70,12 +70,22 @@ private:
         auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
         root->AddChildNode(std::move(increaseTickCounter));
 
+        root->AddChildNode(std::make_unique<ExecuteCommandoOrderNode>());
+
         auto findAndPlan = std::make_unique<SequenceNode>();
-        findAndPlan->AddChildNode(std::make_unique<FindTarget>());        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
+        findAndPlan->AddChildNode(std::make_unique<FindTarget>());
+        findAndPlan->AddChildNode(std::make_unique<ShareTargetInformationNode>());
+        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
         root->AddChildNode(std::move(findAndPlan));
+
+        auto checkSharedData = std::make_unique<SequenceNode>();
+        checkSharedData->AddChildNode(std::make_unique<UseSharedTargetInformationNode>());
+        checkSharedData->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(checkSharedData));
         
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
+        SearchForPlayer->AddChildNode(std::make_unique<UpdateSharedData>());
         SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
         root->AddChildNode(std::move(SearchForPlayer));
 
@@ -91,12 +101,22 @@ private:
         auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
         root->AddChildNode(std::move(increaseTickCounter));
 
-        auto findAndPlan = std::make_unique<SequenceNode>();
-        findAndPlan->AddChildNode(std::make_unique<FindTarget>());        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
-        root->AddChildNode(std::move(findAndPlan));
+        auto engageSequence = std::make_unique<SequenceNode>();
+        engageSequence->AddChildNode(std::make_unique<FindTarget>());
+        engageSequence->AddChildNode(std::make_unique<ShareTargetInformationNode>());
+        engageSequence->AddChildNode(std::make_unique<PlanCommandoAmbushNode>());
+        engageSequence->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(engageSequence));
+
+        auto useSharedSequence = std::make_unique<SequenceNode>();
+        useSharedSequence->AddChildNode(std::make_unique<UseSharedTargetInformationNode>());
+        useSharedSequence->AddChildNode(std::make_unique<PlanCommandoAmbushNode>());
+        useSharedSequence->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(useSharedSequence));
         
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
+        SearchForPlayer->AddChildNode(std::make_unique<UpdateSharedData>());
         SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
         root->AddChildNode(std::move(SearchForPlayer));
 
@@ -136,7 +156,13 @@ public:
                 break;
             }
             case EntityType::CommandoEnemy: {
-                enemyType = EnemyType::CommandoEnemy; 
+                enemyType = EnemyType::CommandoEnemy;
+                AI = CreateBasicCommandoAI();
+                break;
+            }
+            case EntityType::CommandoLeaderEnemy: {
+                enemyType = EnemyType::CommandoEnemy;
+                AI = CreateLeaderCommandoAI();
                 break;
             }
             default: break;
@@ -146,11 +172,14 @@ public:
         aiComponents[entityID] = {{}, std::move(AI), enemyType};
 
         if (enemyType == EnemyType::AdvancedEnemy) {
-            blackboardComponents[entityID] = {&entityManager.GetAdvancedEnemyBlackboard(), nullptr};
+            blackboardComponents[entityID] = {&entityManager.GetAdvancedEnemyBlackboard()};
             entityManager.GetAdvancedEnemyBlackboard().GetOrCreateEnemyIndex(entityID);
         } else if (enemyType == EnemyType::CommandoEnemy) {
-            blackboardComponents[entityID] = {nullptr, &entityManager.GetCommandoEnemyBlackboard()};
+            blackboardComponents[entityID] = {&entityManager.GetCommandoEnemyBlackboard()};
             entityManager.GetCommandoEnemyBlackboard().GetOrCreateEnemyIndex(entityID);
+            if (type == EntityType::CommandoLeaderEnemy) {
+                entityManager.GetCommandoEnemyBlackboard().commanderID = entityID;
+            }
         }
     }
 
@@ -190,19 +219,19 @@ public:
 
     Player CreatePlayer(int x, int y, EntityDirection direction, Blackboard &bb){
         Player player = Player (x, y, &bb);
-        player.direction = direction;
+        player.position.direction = direction;
         player.SetTexture(textureManager.getTexture("./Assets/Sprites/testSprite.png"));
 
         return player;
     };
 
     EntityFactory(SDL_Renderer *rend, Blackboard *bb)
-        : renderer(rend), textureManager(rend), blackboard{bb}
+        : renderer(rend), blackboard{bb}, textureManager(rend)
     {
     };
 
     EntityFactory()
-        : renderer(nullptr), textureManager(nullptr), blackboard{nullptr}
+        : renderer(nullptr), blackboard{nullptr}, textureManager(nullptr)
     {
     };
 

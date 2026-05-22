@@ -2,6 +2,14 @@
 
 void PauseMenu::DrawWindow(){//drawing all elements
     menus->GetRootMenu()->DrawWindow();
+    
+    SDL_FRect rect;
+    rect = {500, 0, 1000, (float)menuBlackboard.windowHight};
+
+    SDL_SetRenderDrawBlendMode(*menuBlackboard.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(*menuBlackboard.renderer, 100, 100, 100, 250);
+    SDL_RenderFillRect(*menuBlackboard.renderer, &rect);
+    SDL_SetRenderDrawBlendMode(*menuBlackboard.renderer, SDL_BLENDMODE_NONE);
 
     resumeButton.DrawElement(*menuBlackboard.renderer);
     quitButton.DrawElement(*menuBlackboard.renderer);

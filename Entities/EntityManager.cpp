@@ -1,6 +1,7 @@
 #include "EntityManager.h"
 #include "EntityFactory.h"
 #include "AI/BehaviorTree.h"
+#include <algorithm>
 
 void EntityManager::UpdateShadowGrid(){
 
@@ -30,25 +31,6 @@ void EntityManager::UpdateShadowGrid(){
     }
 }
 
-void EntityManager::UpdatePathfindingGrid(){
-    pathfindingGrid = Grid::GenerateGrid(&blackboard->level);
-}
-
-TempEntity* EntityManager::GetEntityById(int entityID){
-    if(entityID == player.ID){
-        static TempEntity tempPlayer = {ActorType::DinamicActor};
-        return &tempPlayer;
-    }
-
-    auto typeIt = typeComponents.find(entityID);
-    if(typeIt != typeComponents.end()){
-        static TempEntity tempEnemy = {typeIt->second.actorType};
-        return &tempEnemy;
-    }
-
-    return nullptr;
-}
-
 const GridCell* EntityManager::GetGridCell(int x, int y) const{
     if(x < 0 || x >= blackboard->columns || y < 0 || y >= blackboard->rows){
         std::cout << "issue with getting grid cell" << std:: endl;
@@ -73,6 +55,21 @@ void EntityManager::UpdateState(){
                 std::cout << "death" << std::endl;
                 return;
             }
+
+            auto typeIt = typeComponents.find(id);//need reviewing
+            if (typeIt != typeComponents.end() && typeIt->second.enemyType == EnemyType::CommandoEnemy) {
+                if (id == commandoEnemyBlackboard.commanderID) {
+                    commandoEnemyBlackboard.commanderID = -1;
+                    commandoEnemyBlackboard.ClearOrders();
+                    commandoEnemyBlackboard.commandTickCount = 0;
+                }
+                commandoEnemyBlackboard.orders.erase(id);
+                auto memberIt = std::find(commandoEnemyBlackboard.MemberIDs.begin(), commandoEnemyBlackboard.MemberIDs.end(), id);
+                if (memberIt != commandoEnemyBlackboard.MemberIDs.end()) {
+                    commandoEnemyBlackboard.MemberIDs.erase(memberIt);
+                }
+            }
+
             // Remove from all component maps
             positionComponents.erase(id);
             movementComponents.erase(id);
@@ -94,13 +91,8 @@ EntityManager::~EntityManager(){
 
 void EntityManager::SetUp(Blackboard &bb){
     this->blackboard = &bb;
-    player = bb.entityFactory.CreatePlayer(8, 8, EntityDirection::Up, bb);
-    AddEntity(3, 2, EntityDirection::Down, EntityType::BasicEnemy);
-    AddEntity(9, 10, EntityDirection::Down, EntityType::BasicEnemy);
-    AddEntity(1, 3, EntityDirection::Down, EntityType::BasicEnemy);
-    shadowGrid.resize(bb.rows * bb.columns);
+    shadowGrid.assign(bb.rows * bb.columns, GridCell());
     UpdateShadowGrid();
-    //pathfindingGrid = Grid::GenerateGrid(&bb.level);
 }
 
 void EntityManager::AddEntity(int x, int y, EntityDirection direction, EntityType type) {

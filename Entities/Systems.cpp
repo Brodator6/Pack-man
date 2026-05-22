@@ -23,15 +23,22 @@ void AISystem::Update(std::unordered_map<int, AIComponent>& aiComponents,
             auto moveIt = moveComponents.find(entityID);
             auto typeIt = typeComponents.find(entityID);
             auto staticIt = staticComponents.find(entityID);
+            auto bbIt = bbComponents.find(entityID);
 
             if (posIt != posComponents.end() && typeIt != typeComponents.end()) {
-                // For static entities, staticComp may not exist, so provide a dummy if not found
                 StaticEntityComponent dummyStatic = {0, 0};
-                StaticEntityComponent& staticComp = (staticIt != staticComponents.end()) ? staticIt->second : dummyStatic;
                 MovementComponent dummyMove = {0, 0, 1.0f, 0, 0, -1, -1, EntityDirection::Down, false};
-                MovementComponent& move = (moveIt != moveComponents.end()) ? moveIt->second : dummyMove;
 
-                aiComp.AI->Tick(entityID, posIt->second, move, aiComp, typeIt->second, staticComp, blackboard);
+                EnemyBlackboard enemyBB;
+                enemyBB.entityID = entityID;
+                enemyBB.position = &posIt->second;
+                enemyBB.movement = (moveIt != moveComponents.end()) ? &moveIt->second : &dummyMove;
+                enemyBB.AI = &aiComp;
+                enemyBB.type = &typeIt->second;
+                enemyBB.staticComp = (staticIt != staticComponents.end()) ? &staticIt->second : &dummyStatic;
+                enemyBB.blackboardComponent = (bbIt != bbComponents.end()) ? &bbIt->second : nullptr;
+
+                aiComp.AI->Tick(enemyBB, blackboard);
             }
         }
     }
