@@ -46,7 +46,7 @@ public:
         ability.duration = 0.0f;
         ability.charges = 0;
         ability.isConsumable = false;
-        ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"), SDL_DestroyTexture);
+        ability.texture = nullptr;
 
 
         switch (type)
@@ -57,6 +57,7 @@ public:
             ability.duration = 0.0f;
             ability.charges = 5;
             ability.isConsumable = true;
+            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/MineSprite.png"), SDL_DestroyTexture);
             break;
         }
 
@@ -66,6 +67,7 @@ public:
             ability.duration = 0.0f;
             ability.charges = 5;
             ability.isConsumable = true;
+            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"), SDL_DestroyTexture);
             break;
         }
 
@@ -75,6 +77,7 @@ public:
             ability.duration = 0.0f;
             ability.charges = 3;
             ability.isConsumable = true;
+            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/RoadBlockerSprite.png"), SDL_DestroyTexture);
             break;
         }
 
@@ -84,6 +87,7 @@ public:
             ability.duration = 3.0f;
             ability.charges = 0;
             ability.isConsumable = false;
+            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/SpeedBoostSprite.png"), SDL_DestroyTexture);
             break;
         }
 
@@ -93,6 +97,7 @@ public:
             ability.duration = 5.0f;
             ability.charges = 0;
             ability.isConsumable = false;
+            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/InvisibilitySprite.png"), SDL_DestroyTexture);
             break;
         }
         

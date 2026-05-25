@@ -114,7 +114,7 @@ public:
                     enemyBB.movement->goalY = checkY;
                     enemyBB.movement->LastSeenPlayerX = checkX;
                     enemyBB.movement->LastSeenPlayerY = checkY;
-                    enemyBB.movement->lastSeenDirection = bb.entityManager.GetPlayer().position.direction;
+                    enemyBB.movement->lastSeenDirection = bb.entityManager.GetPlayer().positionComponent.direction;
                     enemyBB.movement->isChasing = true;
 
                     return NodeStatus::SUCCESS;

@@ -1,16 +1,15 @@
 #include "AbilityMenu.h"
+#include <algorithm>
 
 AbilityMenu::AbilityMenu(MenuManager* menus, MenuBlackboard& mBB, TimeBlackboard& tBB, AbilityMenuBlackboard& aBB)
     : GUI(menus, mBB, tBB), abilityBlackboard(aBB),
       abilityButtons{
-          Button(100, 100, 200, 100, [this]() { CreateAbilitySelectionHandler(0)(); }, "Ability 1", font, textColor, abilityBlackboard.renderer),
-          Button(100, 250, 200, 100, [this]() { CreateAbilitySelectionHandler(1)(); }, "Ability 2", font, textColor, abilityBlackboard.renderer),
-          Button(100, 400, 200, 100, [this]() { CreateAbilitySelectionHandler(2)(); }, "Ability 3", font, textColor, abilityBlackboard.renderer)
+          Button(600, 100, 200, 200, [this]() { CreateAbilitySelectionHandler(0)(); }, "Ability 1", font, textColor, abilityBlackboard.renderer),
+          Button(600, 450, 200, 200, [this]() { CreateAbilitySelectionHandler(1)(); }, "Ability 2", font, textColor, abilityBlackboard.renderer)
       },
       abilityDescriptions{
-          Text(320, 100, 600, 100, "Description 1", font, textColor, abilityBlackboard.renderer),
-          Text(320, 250, 600, 100, "Description 2", font, textColor, abilityBlackboard.renderer),
-          Text(320, 400, 600, 100, "Description 3", font, textColor, abilityBlackboard.renderer)
+          Text(820, 100, 600, 200, "Description 1", font, {255, 255, 255, 0}, abilityBlackboard.renderer),
+          Text(820, 450, 600, 200, "Description 2", font, {255, 255, 255, 0}, abilityBlackboard.renderer)
       }
 {
     ProposeAbilities();
@@ -77,17 +76,31 @@ void AbilityMenu::ProposeAbilities() {
     // Determine what to propose based on current abilities
     if (HasEmptySlot()) {
         // Can propose new ability types
-        for (int i = 0; i < 3; ++i) {
-            std::uniform_int_distribution<> dist(0, availableAbilities.size() - 1);
+        // Filter out non-consumable abilities the player already has
+        std::vector<AbilityType> candidates = availableAbilities;
+        if (abilityBlackboard.playerAbilities) {
+            for (int p = 0; p < 4; ++p) {
+                AbilityType pt = abilityBlackboard.playerAbilities[p].type;
+                if (pt != AbilityType::None && !abilityBlackboard.playerAbilities[p].isConsumable) {
+                    // remove pt from candidates
+                    candidates.erase(std::remove(candidates.begin(), candidates.end(), pt), candidates.end());
+                }
+            }
+        }
+        if (candidates.empty()) candidates = availableAbilities;
+
+        for (int i = 0; i < 2; ++i) {
+            std::uniform_int_distribution<> dist(0, candidates.size() - 1);
             int randomIndex = dist(rng);
-            proposedAbilities[i] = availableAbilities[randomIndex];
+            proposedAbilities[i] = candidates[randomIndex];
             proposedDescriptions[i] = GetAbilityDescription(proposedAbilities[i]);
         }
     } else if (HasConsumableAbility()) {
         // Propose increasing charges for consumable abilities
         auto consumableIndices = GetConsumableAbilityIndices();
         
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 2; ++i) {
+            if (consumableIndices.empty()) break;
             std::uniform_int_distribution<> indexDist(0, consumableIndices.size() - 1);
             int selectedIndex = consumableIndices[indexDist(rng)];
             proposedAbilities[i] = abilityBlackboard.playerAbilities[selectedIndex].type;
@@ -96,7 +109,7 @@ void AbilityMenu::ProposeAbilities() {
     } else {
         // No consumable abilities and no empty slots - should not happen in normal gameplay
         // Fallback: propose new abilities anyway
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 2; ++i) {
             std::uniform_int_distribution<> dist(0, availableAbilities.size() - 1);
             int randomIndex = dist(rng);
             proposedAbilities[i] = availableAbilities[randomIndex];
@@ -129,8 +142,26 @@ void AbilityMenu::UpdateAbilityButtonsUI() {
     }
     
     // Update button text and descriptions
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 2; ++i) {
         abilityDescriptions[i].UpdateTextTexture(proposedDescriptions[i], font, textColor);
+
+        // Choose texture for the button: prefer player's existing ability texture if matching, otherwise create a temp ability
+        SDL_Texture *tex = nullptr;
+        // Find existing player's ability with same type
+        for (int p = 0; p < 4; ++p) {
+            if (abilityBlackboard.playerAbilities[p].type == proposedAbilities[i] && abilityBlackboard.playerAbilities[p].texture) {
+                tex = abilityBlackboard.playerAbilities[p].texture.get();
+                break;
+            }
+        }
+        if (!tex) {
+            Ability tmp = abilityBlackboard.abilityFactory->CreateAbility(proposedAbilities[i]);
+            if (tmp.texture) tex = tmp.texture.get();
+        }
+
+        // Replace button with one that shows texture (keep same handler)
+        int y = (i == 0) ? 100 : 450;
+        abilityButtons[i] = Button(600, y, 200, 200, CreateAbilitySelectionHandler(i), tex, abilityBlackboard.renderer);
     }
 }
 
@@ -171,24 +202,28 @@ std::function<void()> AbilityMenu::CreateAbilitySelectionHandler(int proposalInd
 }
 
 void AbilityMenu::DrawWindow() {
-    // Draw background
-    SDL_SetRenderDrawColor(abilityBlackboard.renderer, 200, 200, 200, 255);
-    SDL_FRect bgRect{0, 0, (float)menuBlackboard.windowWidth, (float)menuBlackboard.windowHight};
-    SDL_RenderFillRect(abilityBlackboard.renderer, &bgRect);
+    menus->GetRootMenu()->DrawWindow();
+
+    SDL_FRect rect;
+    rect = {500, 0, 1000, (float)menuBlackboard.windowHight};
+
+    SDL_SetRenderDrawBlendMode(*menuBlackboard.renderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(*menuBlackboard.renderer, 100, 100, 100, 250);
+    SDL_RenderFillRect(*menuBlackboard.renderer, &rect);
+    SDL_SetRenderDrawBlendMode(*menuBlackboard.renderer, SDL_BLENDMODE_NONE);
     
     // Draw title
-    Text titleText(50, 10, 900, 50, "Select an Ability to Add", font, textColor, abilityBlackboard.renderer);
     titleText.DrawElement(abilityBlackboard.renderer);
     
     // Draw buttons and descriptions
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 2; ++i) {
         abilityButtons[i].DrawElement(abilityBlackboard.renderer);
         abilityDescriptions[i].DrawElement(abilityBlackboard.renderer);
     }
 }
 
 SDL_AppResult AbilityMenu::HandleEvents(SDL_Event* Event) {
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 2; ++i) {
         abilityButtons[i].HandleKey(*Event);
     }
     

@@ -359,10 +359,10 @@ bool LevelLoader::LoadLevel(const std::string& filename, GameManager& gameManage
 
     Player player = gameManager.entityFactory.CreatePlayer(playerX, playerY, EntityDirection::Up, gameManager.blackboard);
     player.SetPosition(playerX, playerY);
-    player.position.visualX = static_cast<float>(playerX);
-    player.position.visualY = static_cast<float>(playerY);
-    player.movement.targetX = playerX;
-    player.movement.targetY = playerY;
+    player.positionComponent.visualX = static_cast<float>(playerX);
+    player.positionComponent.visualY = static_cast<float>(playerY);
+    player.movementComponent.targetX = playerX;
+    player.movementComponent.targetY = playerY;
     gameManager.entityManager.SetPlayer(std::move(player));
 
     for (auto &enemyDefinition : enemies) {

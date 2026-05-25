@@ -50,7 +50,7 @@ SDL_AppResult GameMenu::HandleEvents(SDL_Event *Event){
                 break;
             }
             case SDL_SCANCODE_F3: {
-                ResultDataBlackboard transferData = {"You Have Lost", 100, false};
+                ResultDataBlackboard transferData = {"You Have Won", 100, false};
                 menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
                 break;
             }
@@ -73,6 +73,10 @@ void GameMenu::HandleGameLogic(){
         scoreText.UpdateTextTexture(("Score: " + std::to_string(gameManager.entityManager.GetPlayer().score)), font, textColor);
 
         gameManager.HandleGameLogic();
+        abilityIcon1.UpdateChargesTexture(font, textColor);
+        abilityIcon2.UpdateChargesTexture(font, textColor);
+        abilityIcon3.UpdateChargesTexture(font, textColor);
+        abilityIcon4.UpdateChargesTexture(font, textColor);
         
         if(gameManager.lost){
             ResultDataBlackboard transferData = {"You Have Lost", gameManager.globalScore, true};
@@ -106,19 +110,19 @@ std::function<void()> GameMenu::ToTheNextLevel(){
 GameMenu::GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : GUI(menus, mBB, tBB), gameManager{*mBB.renderer, tBB}{
     timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
     timeBlackboard.previousTickTime = timeBlackboard.currentTime;
-    abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer);
-    abilityIcon2.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer);
-    abilityIcon3.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[2], *menuBlackboard.renderer);
-    abilityIcon4.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[3], *menuBlackboard.renderer);
+    abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer, font, textColor);
+    abilityIcon2.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer, font, textColor);
+    abilityIcon3.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[2], *menuBlackboard.renderer, font, textColor);
+    abilityIcon4.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[3], *menuBlackboard.renderer, font, textColor);
 }
 
 GameMenu::GameMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB, const GameManager &previousManager) : GUI(menus, mBB, tBB), gameManager{*mBB.renderer, tBB, previousManager}{
     timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
     timeBlackboard.previousTickTime = timeBlackboard.currentTime;
-    abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer);
-    abilityIcon2.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer);
-    abilityIcon3.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[2], *menuBlackboard.renderer);
-    abilityIcon4.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[3], *menuBlackboard.renderer);
+    abilityIcon1.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[0], *menuBlackboard.renderer, font, textColor);
+    abilityIcon2.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[1], *menuBlackboard.renderer, font, textColor);
+    abilityIcon3.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[2], *menuBlackboard.renderer, font, textColor);
+    abilityIcon4.SetTargetAbility(&gameManager.entityManager.GetPlayer().abilities[3], *menuBlackboard.renderer, font, textColor);
 }
 
 GameMenu::~GameMenu(){

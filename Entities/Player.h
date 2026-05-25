@@ -16,9 +16,9 @@ private:
 
 public:
     // ECS Components
-    PositionComponent position;
-    MovementComponent movement;
-    RenderComponent render;
+    PositionComponent positionComponent;
+    MovementComponent movementComponent;
+    RenderComponent renderComponent;
     
     // Player-specific data
     Ability abilities[4];
@@ -34,20 +34,19 @@ public:
     void SetTexture(const std::shared_ptr<SDL_Texture> &tex);
 
     int GetScore() const;
-    void AddScore(int extraPoints);
     void SetTargetPosition(int x, int y);
+    void SetBlackboard(Blackboard *bb);
+    void AddScore(int extraPoints);
 
     bool HasReachedNode() const;
 
-    void Move();
 
+    void Move();
     void UpdateMovement(std::vector<std::vector<TileData>> &level, int rows, int columns);
 
     void UseAbility();
-
     void UpdateAbilitiesCooldown(float deltaTime);
 
-    void SetBlackboard(Blackboard *bb);
 
     void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize);
     

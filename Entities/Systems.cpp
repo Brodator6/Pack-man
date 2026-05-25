@@ -119,12 +119,9 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
             renderComp.rect.y = widthMargin + pos.visualY * cellWidth + 5;
             renderComp.rect.w = squareSize - 10;
             renderComp.rect.h = squareSize - 10;
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-            SDL_RenderFillRect(renderer, &renderComp.rect);
             SDL_RenderTextureRotated(renderer, renderComp.texture.get(), NULL, &renderComp.rect, 
-                                     (0.0 + ((pos.direction == EntityDirection::Down) * 90.0) + 
-                                      ((pos.direction == EntityDirection::Left) * 180.0) + 
-                                      ((pos.direction == EntityDirection::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+                                     (0.0 + ((pos.direction == EntityDirection::Up) * 90.0) + ((pos.direction == EntityDirection::Right) * 180.0) + ((pos.direction == EntityDirection::Down) * 270.0)), NULL, SDL_FLIP_NONE);
+                                      
         }
     }
 }

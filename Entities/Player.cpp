@@ -9,47 +9,47 @@ int Player::GetScore() const{return score;}
 void Player::AddScore(int extraPoints){score += extraPoints;}
 
 void Player::SetTargetPosition(int x, int y){
-    this->movement.targetX = x;
-    this->movement.targetY = y;
+    this->movementComponent.targetX = x;
+    this->movementComponent.targetY = y;
 }
 
 bool Player::HasReachedNode() const {
-    return position.visualX == float(position.x) && position.visualY == float(position.y);
+    return positionComponent.visualX == float(positionComponent.x) && positionComponent.visualY == float(positionComponent.y);
 }
 
 int Player::GetPositionX() const {
-    return position.x;
+    return positionComponent.x;
 }
 
 int Player::GetPositionY() const {
-    return position.y;
+    return positionComponent.y;
 }
 
 void Player::SetPosition(int X, int Y) {
-    position.x = X;
-    position.y = Y;
+    positionComponent.x = X;
+    positionComponent.y = Y;
 }
 
 void Player::SetTexture(const std::shared_ptr<SDL_Texture> &tex) {
-    render.texture = tex;
+    renderComponent.texture = tex;
 }
 
 void Player::UpdateMovement(std::vector<std::vector<TileData>> &level, int rows, int columns){
     if (this->HasReachedNode()) {
         if(this->controls[SDL_SCANCODE_DOWN] == true){
-            this->position.direction = EntityDirection::Down;
+            this->positionComponent.direction = EntityDirection::Down;
             this->SetTargetPosition(this->GetPositionX(),
             this->GetPositionY() + ((IsWalkable(level[(this->GetPositionY() + 1) % rows][this->GetPositionX()]))) - ((this->GetPositionY() >= rows - 1) * rows));
         }else if(this->controls[SDL_SCANCODE_RIGHT] == true){
-            this->position.direction = EntityDirection::Right;
+            this->positionComponent.direction = EntityDirection::Right;
             this->SetTargetPosition(this->GetPositionX() + ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() + 1) % columns])))  - ((this->GetPositionX() >= columns - 1) * columns),
             this->GetPositionY());
         }else if(this->controls[SDL_SCANCODE_UP] == true){
-            this->position.direction = EntityDirection::Up;
+            this->positionComponent.direction = EntityDirection::Up;
             this->SetTargetPosition(this->GetPositionX(),
             this->GetPositionY() - ((IsWalkable(level[(this->GetPositionY() - 1 + rows) % rows][this->GetPositionX()])))  + ((this->GetPositionY() <= 0) * rows));
         }else if(this->controls[SDL_SCANCODE_LEFT] == true){
-            this->position.direction = EntityDirection::Left;
+            this->positionComponent.direction = EntityDirection::Left;
             this->SetTargetPosition(this->GetPositionX() - ((IsWalkable(level[this->GetPositionY()][(this->GetPositionX() - 1 + columns) % columns])))  + ((this->GetPositionX() <= 0) * columns),
             this->GetPositionY());
         }
@@ -57,38 +57,38 @@ void Player::UpdateMovement(std::vector<std::vector<TileData>> &level, int rows,
 }
 
 void Player::Move(){
-    int originalX = position.x;
-    int originalY = position.y;
+    int originalX = positionComponent.x;
+    int originalY = positionComponent.y;
 
-    int dx = movement.targetX - position.x;
-    int dy = movement.targetY - position.y;
+    int dx = movementComponent.targetX - positionComponent.x;
+    int dy = movementComponent.targetY - positionComponent.y;
 
-    float step = 0.2f * movement.speedModifier;
+    float step = 0.2f * movementComponent.speedModifier;
     float dirX = dx == 0 ? 0.0f : (dx > 0 ? 1.0f : -1.0f);
     float dirY = dy == 0 ? 0.0f : (dy > 0 ? 1.0f : -1.0f);
 
     float moveX = dirX * step;
     float moveY = dirY * step;
-    if (dx != 0 && std::abs(moveX) > std::abs(movement.targetX - position.visualX)) {
-        moveX = movement.targetX - position.visualX;
+    if (dx != 0 && std::abs(moveX) > std::abs(movementComponent.targetX - positionComponent.visualX)) {
+        moveX = movementComponent.targetX - positionComponent.visualX;
     }
-    if (dy != 0 && std::abs(moveY) > std::abs(movement.targetY - position.visualY)) {
-        moveY = movement.targetY - position.visualY;
+    if (dy != 0 && std::abs(moveY) > std::abs(movementComponent.targetY - positionComponent.visualY)) {
+        moveY = movementComponent.targetY - positionComponent.visualY;
     }
 
-    position.visualX += moveX;
-    position.visualY += moveY;
+    positionComponent.visualX += moveX;
+    positionComponent.visualY += moveY;
 
-    if (dx == 0) position.visualX = float(position.x);
-    if (dy == 0) position.visualY = float(position.y);
+    if (dx == 0) positionComponent.visualX = float(positionComponent.x);
+    if (dy == 0) positionComponent.visualY = float(positionComponent.y);
 
-    if (dx != 0 && std::abs(position.visualX - movement.targetX) < 0.001f) {
-        position.visualX = float(movement.targetX);
-        position.x = movement.targetX;
+    if (dx != 0 && std::abs(positionComponent.visualX - movementComponent.targetX) < 0.001f) {
+        positionComponent.visualX = float(movementComponent.targetX);
+        positionComponent.x = movementComponent.targetX;
     }
-    if (dy != 0 && std::abs(position.visualY - movement.targetY) < 0.001f) {
-        position.visualY = float(movement.targetY);
-        position.y = movement.targetY;
+    if (dy != 0 && std::abs(positionComponent.visualY - movementComponent.targetY) < 0.001f) {
+        positionComponent.visualY = float(movementComponent.targetY);
+        positionComponent.y = movementComponent.targetY;
     }
 }
 
@@ -107,8 +107,8 @@ void Player::UseAbility(){
             continue;
         }
 
-        int dirX = (position.direction == EntityDirection::Right) - (position.direction == EntityDirection::Left);
-        int dirY = (position.direction == EntityDirection::Down) - (position.direction == EntityDirection::Up);
+        int dirX = (positionComponent.direction == EntityDirection::Right) - (positionComponent.direction == EntityDirection::Left);
+        int dirY = (positionComponent.direction == EntityDirection::Down) - (positionComponent.direction == EntityDirection::Up);
         int frontX = this->GetPositionX() + dirX;
         int frontY = this->GetPositionY() + dirY;
         bool used = false;
@@ -116,14 +116,14 @@ void Player::UseAbility(){
         switch (ability.type) {
             case AbilityType::Claymore: {
                 if (frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && blackboard->level[frontY][frontX].isWalkable) {
-                    blackboard->entityManager.AddEntity(frontX, frontY, position.direction, EntityType::Claymore);
+                    blackboard->entityManager.AddEntity(frontX, frontY, positionComponent.direction, EntityType::Claymore);
                     used = true;
                 }
                 break;
             }
             case AbilityType::WallCharge: {
                 if(frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && !blackboard->level[frontY][frontX].isWalkable){
-                    blackboard->entityManager.AddEntity(frontX, frontY, position.direction, EntityType::WallCharge);
+                    blackboard->entityManager.AddEntity(frontX, frontY, positionComponent.direction, EntityType::WallCharge);
                     used = true;
                 }
                 break;
@@ -137,7 +137,7 @@ void Player::UseAbility(){
                 break;
             }
             case AbilityType::SpeedBoost: {
-                movement.speedModifier = 2.0f;
+                movementComponent.speedModifier = 2.0f;
                 ability.durationRemaining = ability.duration;
                 used = true;
                 break;
@@ -182,7 +182,7 @@ void Player::UpdateAbilitiesCooldown(float deltaTime){
                 ability.durationRemaining = 0.0f;
                 switch(ability.type){
                     case AbilityType::SpeedBoost:
-                        movement.speedModifier = 1.0f;
+                        movementComponent.speedModifier = 1.0f;
                         break;
                     case AbilityType::Invisibility:
                         isInvisible = false;
@@ -196,24 +196,22 @@ void Player::UpdateAbilitiesCooldown(float deltaTime){
 }
 
 void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
-    this->render.rect.x = hightMargine + position.visualX * cellHight + 5;
-    this->render.rect.y = widthMargine + position.visualY * cellWidth + 5;
-    this->render.rect.w = squareSize - 10;
-    this->render.rect.h = squareSize - 10;
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderFillRect(renderer, &this->render.rect);
-    SDL_RenderTextureRotated(renderer, render.texture.get(), NULL, &render.rect, (0.0 + ((position.direction == EntityDirection::Down) * 90.0) + ((position.direction == EntityDirection::Left) * 180.0) + ((position.direction == EntityDirection::Up) * 270.0)), NULL, SDL_FLIP_NONE);
+    this->renderComponent.rect.x = hightMargine + positionComponent.visualX * cellHight + 5;
+    this->renderComponent.rect.y = widthMargine + positionComponent.visualY * cellWidth + 5;
+    this->renderComponent.rect.w = squareSize - 10;
+    this->renderComponent.rect.h = squareSize - 10;
+    SDL_RenderTextureRotated(renderer, renderComponent.texture.get(), NULL, &renderComponent.rect, (0.0 + ((positionComponent.direction == EntityDirection::Up) * 90.0) + ((positionComponent.direction == EntityDirection::Right) * 180.0) + ((positionComponent.direction == EntityDirection::Down) * 270.0)), NULL, SDL_FLIP_NONE);
 }
 
 Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> controlsMap):blackboard{bb}, controls{controlsMap} {
-    position = {x, y, static_cast<float>(x), static_cast<float>(y), EntityDirection::Down};
-    this->movement = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
-    render = {{nullptr}, {0, 0, 0, 0}};
+    positionComponent = {x, y, static_cast<float>(x), static_cast<float>(y), EntityDirection::Down};
+    this->movementComponent = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
+    renderComponent = {{nullptr}, {0, 0, 0, 0}};
 
-    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Invisibility);
-    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::Claymore);
+    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Claymore);
+    abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
     abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
-    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::SpeedBoost);
+    abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
 
 }
 

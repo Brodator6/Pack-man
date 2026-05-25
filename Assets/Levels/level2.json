@@ -6,8 +6,8 @@
     "y": 8
   },
   "enemies": [
-    { "type": "CommandoLeaderEnemy", "x": 3, "y": 2 },
-    { "type": "CommandoEnemy", "x": 9, "y": 10 },
+    { "type": "CommandoLeaderEnemy", "x": 9, "y": 10 },
+    { "type": "CommandoEnemy", "x": 3, "y": 2 },
     { "type": "CommandoEnemy", "x": 1, "y": 3 }
   ],
   "rows": [

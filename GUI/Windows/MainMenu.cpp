@@ -3,13 +3,13 @@
 
 void MainMenu::DrawWindow(){
     startButton.DrawElement((*menuBlackboard.renderer));
-    settingsButton.DrawElement((*menuBlackboard.renderer));
+    //settingsButton.DrawElement((*menuBlackboard.renderer));
     quitButton.DrawElement((*menuBlackboard.renderer));
 }
 
 SDL_AppResult MainMenu::HandleEvents(SDL_Event *Event){
     startButton.HandleKey((*Event));
-    settingsButton.HandleKey((*Event));
+    //settingsButton.HandleKey((*Event));
     quitButton.HandleKey((*Event));
 
     return SDL_APP_CONTINUE;

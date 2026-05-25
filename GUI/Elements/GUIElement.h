@@ -45,5 +45,7 @@ public:
 void DrawBackground(SDL_Renderer *renderer);
 
 SDL_Texture *SetTextAsTexture(SDL_Renderer *renderer, SDL_FRect &textureRect, const SDL_FRect &rect, const std::string &text, const SDL_Color &textColor, TTF_Font *font);
+SDL_Texture *SetTextAsTextureCentered(SDL_Renderer *renderer, SDL_FRect &textureRect, const SDL_FRect &rect, const std::string &text, const SDL_Color &textColor, TTF_Font *font);
 
-SDL_Texture *SetTexture(SDL_Renderer *renderer, SDL_FRect &textRect, const SDL_Texture *tex);
+
+SDL_Texture *SetTexture(SDL_Renderer *renderer, SDL_FRect &textRect, SDL_Texture *tex);

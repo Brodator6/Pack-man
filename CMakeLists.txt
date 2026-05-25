@@ -45,7 +45,6 @@ add_executable(Pac-Man
     Entities/GameMaganer.cpp
     LevelLoader.cpp
     Entities/AI/AIUtils.cpp
-    Entities/Entity.cpp
     Entities/Player.cpp
     Entities/Pathfinding/Pathfinding.cpp
     Entities/EntityManager.cpp

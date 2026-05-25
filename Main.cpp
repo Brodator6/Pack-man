@@ -9,7 +9,6 @@
 #include "GUI/Windows/GUI.h"
 #include "GUI/Windows/MenuManager.h"
 #include "GUI/Windows/MainMenu.h"
-#include "./Entities/Entity.h"
 
 /* We will use this renderer to draw into this window every frame. */
 static SDL_Window *window = NULL;

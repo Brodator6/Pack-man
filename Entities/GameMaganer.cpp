@@ -63,7 +63,6 @@ void GameManager::HandleGameLogic(){
     
     entityManager.UpdateState();
     entityManager.UpdateShadowGrid();
-    //entityManager.UpdatePathfindingGrid();
 };
 
 void GameManager::UpdateGameState(){
@@ -72,10 +71,10 @@ void GameManager::UpdateGameState(){
     ApplyEffect(*this, level[entityManager.GetPlayer().GetPositionY()][entityManager.GetPlayer().GetPositionX()]);
 
     Player &player = entityManager.GetPlayer();//gotta review
-    float playerLeft = player.position.visualX;
-    float playerTop = player.position.visualY;
-    float playerRight = player.position.visualX + 1.0f;
-    float playerBottom = player.position.visualY + 1.0f;
+    float playerLeft = player.positionComponent.visualX;
+    float playerTop = player.positionComponent.visualY;
+    float playerRight = player.positionComponent.visualX + 1.0f;
+    float playerBottom = player.positionComponent.visualY + 1.0f;
 
     const int centerX = player.GetPositionX();
     const int centerY = player.GetPositionY();
@@ -139,12 +138,12 @@ GameManager::GameManager(SDL_Renderer *renderer, TimeBlackboard &tBB, const Game
     Player nextPlayer = previousManager.entityManager.GetPlayer();
     nextPlayer.SetBlackboard(&blackboard);
     nextPlayer.score = 0;
-    nextPlayer.movement.targetX = entityManager.GetPlayer().GetPositionX();
-    nextPlayer.movement.targetY = entityManager.GetPlayer().GetPositionY();
-    nextPlayer.position.visualX = static_cast<float>(entityManager.GetPlayer().GetPositionX());
-    nextPlayer.position.visualY = static_cast<float>(entityManager.GetPlayer().GetPositionY());
+    nextPlayer.movementComponent.targetX = entityManager.GetPlayer().GetPositionX();
+    nextPlayer.movementComponent.targetY = entityManager.GetPlayer().GetPositionY();
+    nextPlayer.positionComponent.visualX = static_cast<float>(entityManager.GetPlayer().GetPositionX());
+    nextPlayer.positionComponent.visualY = static_cast<float>(entityManager.GetPlayer().GetPositionY());
     nextPlayer.SetPosition(entityManager.GetPlayer().GetPositionX(), entityManager.GetPlayer().GetPositionY());
-    nextPlayer.position.direction = entityManager.GetPlayer().position.direction;
+    nextPlayer.positionComponent.direction = entityManager.GetPlayer().positionComponent.direction;
     entityManager.SetPlayer(std::move(nextPlayer));
     entityManager.UpdateShadowGrid();
 };

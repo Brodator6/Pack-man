@@ -139,7 +139,7 @@ public:
         auto& blackboardComponents = entityManager.GetBlackboardComponents();
 
         positionComponents[entityID] = {x, y, static_cast<float>(x), static_cast<float>(y), direction};
-        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/testSprite.png"), SDL_FRect{0, 0, 0, 0}};
+        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/AdvancedEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
         movementComponents[entityID] = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
 
         EnemyType enemyType = EnemyType::None;
@@ -195,7 +195,7 @@ public:
         auto& aiComponents = entityManager.GetAIComponents();
 
         positionComponents[entityID] = {x, y, static_cast<float>(x), static_cast<float>(y), direction};
-        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/testSprite.png"), SDL_FRect{0, 0, 0, 0}};
+        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/MineSprite.png"), SDL_FRect{0, 0, 0, 0}};
         typeComponents[entityID] = {ActorType::StaticActor, EnemyType::None};
         staticComponents[entityID] = {0, 0};
 
@@ -219,7 +219,7 @@ public:
 
     Player CreatePlayer(int x, int y, EntityDirection direction, Blackboard &bb){
         Player player = Player (x, y, &bb);
-        player.position.direction = direction;
+        player.positionComponent.direction = direction;
         player.SetTexture(textureManager.getTexture("./Assets/Sprites/testSprite.png"));
 
         return player;

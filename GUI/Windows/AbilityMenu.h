@@ -12,12 +12,14 @@ private:
     AbilityMenuBlackboard abilityBlackboard;
     
     // Proposed abilities
-    std::array<AbilityType, 3> proposedAbilities;
-    std::array<std::string, 3> proposedDescriptions;
+    std::array<AbilityType, 2> proposedAbilities;
+    std::array<std::string, 2> proposedDescriptions;
     
     // UI Elements
-    std::array<Button, 3> abilityButtons;
-    std::array<Text, 3> abilityDescriptions;
+    std::array<Button, 2> abilityButtons;
+    std::array<Text, 2> abilityDescriptions;
+
+    Text titleText = Text(800, 10, 900, 50, "You may chose only one ability", font, {255, 255, 255, 0}, abilityBlackboard.renderer);
     
     // Random number generator
     std::mt19937 rng{std::random_device{}()};
