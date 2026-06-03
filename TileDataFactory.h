@@ -12,7 +12,7 @@ public:
             case '_':
                 return {FLOOR, true, 0};
             case '*':
-                return {SMALL_REWARD, true, 10};
+                return {SMALL_REWARD, true, 20};
             default:
                 return {FLOOR, true, 0}; // default to floor
         }

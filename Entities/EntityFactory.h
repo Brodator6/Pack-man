@@ -26,7 +26,7 @@ private:
 
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
-        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        //SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
         root->AddChildNode(std::move(SearchForPlayer));
 
         root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
@@ -55,7 +55,7 @@ private:
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
         SearchForPlayer->AddChildNode(std::make_unique<UpdateSharedData>());
-        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        //SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
         root->AddChildNode(std::move(SearchForPlayer));
 
         root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
@@ -86,7 +86,7 @@ private:
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
         SearchForPlayer->AddChildNode(std::make_unique<UpdateSharedData>());
-        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        //SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
         root->AddChildNode(std::move(SearchForPlayer));
 
         root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
@@ -117,7 +117,7 @@ private:
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
         SearchForPlayer->AddChildNode(std::make_unique<UpdateSharedData>());
-        SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
+        //SearchForPlayer->AddChildNode(std::make_unique<JunctionDesitionNode>(0, 100, 0));
         root->AddChildNode(std::move(SearchForPlayer));
 
         root->AddChildNode(std::make_unique<JunctionDesitionNode>(100, 80, 1));
@@ -139,30 +139,34 @@ public:
         auto& blackboardComponents = entityManager.GetBlackboardComponents();
 
         positionComponents[entityID] = {x, y, static_cast<float>(x), static_cast<float>(y), direction};
-        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/AdvancedEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
+        renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/testSprite.png"), SDL_FRect{0, 0, 0, 0}};
         movementComponents[entityID] = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
 
         EnemyType enemyType = EnemyType::None;
         std::unique_ptr<SelectorNode> AI;
         switch(type) {
             case EntityType::BasicEnemy: {
-                enemyType = EnemyType::BasicEnemy; 
+                enemyType = EnemyType::BasicEnemy;
+                renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/BasicEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
                 AI = CreateBasicAI();
                 break;
             }
             case EntityType::AdvancedEnemy: {
-                enemyType = EnemyType::AdvancedEnemy; 
+                enemyType = EnemyType::AdvancedEnemy;
+                renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/AdvancedEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
                 AI = CreateAdvancedAI();
                 break;
             }
             case EntityType::CommandoEnemy: {
                 enemyType = EnemyType::CommandoEnemy;
                 AI = CreateBasicCommandoAI();
+                renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/CommandoEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
                 break;
             }
             case EntityType::CommandoLeaderEnemy: {
                 enemyType = EnemyType::CommandoEnemy;
                 AI = CreateLeaderCommandoAI();
+                renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/CommandoEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
                 break;
             }
             default: break;
@@ -201,8 +205,8 @@ public:
 
         auto root = std::make_unique<SelectorNode>();
         switch(type){
-            case EntityType::Claymore: {
-                root->AddChildNode(std::make_unique<ClaymoreTriggerNode>());
+            case EntityType::Mine: {
+                root->AddChildNode(std::make_unique<MineTriggerNode>());
                 break;
             }
             case EntityType::WallCharge: {

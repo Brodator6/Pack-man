@@ -2,6 +2,7 @@
 
 #include "GUI.h"
 #include "GameMenu.h"
+#include "../Elements/Text.h"
 
 struct ResultDataBlackboard{
     std::string ResultTitle = "Lost";

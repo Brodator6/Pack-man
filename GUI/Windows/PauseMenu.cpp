@@ -11,6 +11,7 @@ void PauseMenu::DrawWindow(){//drawing all elements
     SDL_RenderFillRect(*menuBlackboard.renderer, &rect);
     SDL_SetRenderDrawBlendMode(*menuBlackboard.renderer, SDL_BLENDMODE_NONE);
 
+    pauseText.DrawElement(*menuBlackboard.renderer);
     resumeButton.DrawElement(*menuBlackboard.renderer);
     quitButton.DrawElement(*menuBlackboard.renderer);
 }
@@ -46,6 +47,7 @@ std::function<void()> PauseMenu::ToMainMenu(){
 }
 
 PauseMenu::PauseMenu(MenuManager *menus, MenuBlackboard &mBB, TimeBlackboard &tBB) : GUI(menus, mBB, tBB){
+    pauseText.setTextureCentered("Paused", font, {255, 255, 255, 255});
 }
 
 PauseMenu::~PauseMenu(){

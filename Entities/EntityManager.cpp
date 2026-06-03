@@ -97,7 +97,7 @@ void EntityManager::SetUp(Blackboard &bb){
 
 void EntityManager::AddEntity(int x, int y, EntityDirection direction, EntityType type) {
     if (!blackboard) return;
-    if (type == EntityType::Claymore || type == EntityType::WallCharge) {
+    if (type == EntityType::Mine || type == EntityType::WallCharge) {
         blackboard->entityFactory.CreateAndAddStaticEntity(x, y, direction, type);
     } else {
         blackboard->entityFactory.CreateAndAddDynamicEnemy(x, y, direction, type);

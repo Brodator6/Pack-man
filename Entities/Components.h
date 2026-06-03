@@ -33,7 +33,7 @@ enum class EntityType {
     AdvancedEnemy,
     CommandoEnemy,
     CommandoLeaderEnemy,
-    Claymore,
+    Mine,
     WallCharge,
     None
 };
@@ -188,7 +188,7 @@ struct TypeComponent {
 };
 
 /// **StaticEntityComponent**
-/// For static entities like traps (Claymore, WallCharge)
+/// For static entities like traps (Mine, WallCharge)
 /// They don't move but have timers for effects
 struct StaticEntityComponent {
     int timer;       // Time until effect triggers

@@ -16,6 +16,10 @@ public:
         }
     }
 
+    void setTextureCentered(std::string text, TTF_Font *font, const SDL_Color &textColor){
+        texture = std::shared_ptr<SDL_Texture>(SetTextAsTextureCentered(renderer, textureRect, rect, text, textColor, font), SDL_DestroyTexture);
+    }
+
     Text(int x, int y, int width, int hight, const std::string &text, TTF_Font *font, const SDL_Color &textColor, SDL_Renderer *renderer) : GUIElement(x, y, width, hight){
         this->renderer = renderer;
         this->text = text;

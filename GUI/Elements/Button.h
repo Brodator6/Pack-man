@@ -7,11 +7,14 @@ private:
     std::function<void()> functionPointer;
 
 public:
+    Button() = default;
 
     void DrawElement(SDL_Renderer *renderer) override{//function to display element
         SDL_SetRenderDrawColor(renderer, elementColor.r + darkening, elementColor.g + darkening, elementColor.b + darkening, elementColor.a);
         SDL_RenderFillRect(renderer, &rect);
-        SDL_RenderTexture(renderer, texture.get(), NULL, &textureRect);
+        if (texture) {
+            SDL_RenderTexture(renderer, texture.get(), NULL, &textureRect);
+        }
     };
 
     void HandleKey(SDL_Event &Event) override{//function to handle element event
@@ -36,6 +39,14 @@ public:
     Button(int x, int y, int w, int h, std::function<void()> function, SDL_Texture *tex, SDL_Renderer *renderer) : GUIElement(x, y, w, h){
         this->renderer = renderer;
         this->functionPointer = function;
-        texture = std::shared_ptr<SDL_Texture>(SetTexture(renderer, textureRect, tex), SDL_DestroyTexture);
+        if (tex) {
+            texture = std::shared_ptr<SDL_Texture>(SetTexture(renderer, textureRect, tex), [](SDL_Texture *){});
+        }
+    }
+
+    Button(int x, int y, int w, int h, std::function<void()> function, std::shared_ptr<SDL_Texture> tex, SDL_Renderer *renderer) : GUIElement(x, y, w, h){
+        this->renderer = renderer;
+        this->functionPointer = function;
+        texture = tex;
     }
 };

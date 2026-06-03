@@ -66,7 +66,7 @@ std::vector<int> AbilityMenu::GetConsumableAbilityIndices() const {
 
 void AbilityMenu::ProposeAbilities() {
     std::vector<AbilityType> availableAbilities{
-        AbilityType::Claymore,
+        AbilityType::Mine,
         AbilityType::WallCharge,
         AbilityType::RoadBlocker,
         AbilityType::SpeedBoost,
@@ -76,24 +76,33 @@ void AbilityMenu::ProposeAbilities() {
     // Determine what to propose based on current abilities
     if (HasEmptySlot()) {
         // Can propose new ability types
-        // Filter out non-consumable abilities the player already has
+        // Exclude any ability types the player already has, including consumables
         std::vector<AbilityType> candidates = availableAbilities;
         if (abilityBlackboard.playerAbilities) {
             for (int p = 0; p < 4; ++p) {
                 AbilityType pt = abilityBlackboard.playerAbilities[p].type;
-                if (pt != AbilityType::None && !abilityBlackboard.playerAbilities[p].isConsumable) {
-                    // remove pt from candidates
+                if (pt != AbilityType::None) {
                     candidates.erase(std::remove(candidates.begin(), candidates.end(), pt), candidates.end());
                 }
             }
         }
-        if (candidates.empty()) candidates = availableAbilities;
+        if (candidates.empty()) {
+            candidates = availableAbilities;
+        }
 
         for (int i = 0; i < 2; ++i) {
+            if (candidates.empty()) {
+                proposedAbilities[i] = AbilityType::None;
+                proposedDescriptions[i] = "None";
+                continue;
+            }
             std::uniform_int_distribution<> dist(0, candidates.size() - 1);
             int randomIndex = dist(rng);
             proposedAbilities[i] = candidates[randomIndex];
             proposedDescriptions[i] = GetAbilityDescription(proposedAbilities[i]);
+            if (candidates.size() > 1) {
+                candidates.erase(candidates.begin() + randomIndex);
+            }
         }
     } else if (HasConsumableAbility()) {
         // Propose increasing charges for consumable abilities
@@ -120,8 +129,8 @@ void AbilityMenu::ProposeAbilities() {
 
 std::string AbilityMenu::GetAbilityDescription(AbilityType type) const {
     switch (type) {
-        case AbilityType::Claymore:
-            return "Claymore: Explosion ability\nCharges: 5, Cooldown: 5s";
+        case AbilityType::Mine:
+            return "Mine: Explosion ability\nCharges: 5, Cooldown: 5s";
         case AbilityType::WallCharge:
             return "Wall Charge: Ram through walls\nCharges: 5, Cooldown: 50s";
         case AbilityType::RoadBlocker:
@@ -146,17 +155,16 @@ void AbilityMenu::UpdateAbilityButtonsUI() {
         abilityDescriptions[i].UpdateTextTexture(proposedDescriptions[i], font, textColor);
 
         // Choose texture for the button: prefer player's existing ability texture if matching, otherwise create a temp ability
-        SDL_Texture *tex = nullptr;
-        // Find existing player's ability with same type
+        std::shared_ptr<SDL_Texture> tex = nullptr;
         for (int p = 0; p < 4; ++p) {
             if (abilityBlackboard.playerAbilities[p].type == proposedAbilities[i] && abilityBlackboard.playerAbilities[p].texture) {
-                tex = abilityBlackboard.playerAbilities[p].texture.get();
+                tex = abilityBlackboard.playerAbilities[p].texture;
                 break;
             }
         }
-        if (!tex) {
+        if (!tex && proposedAbilities[i] != AbilityType::None) {
             Ability tmp = abilityBlackboard.abilityFactory->CreateAbility(proposedAbilities[i]);
-            if (tmp.texture) tex = tmp.texture.get();
+            tex = tmp.texture;
         }
 
         // Replace button with one that shows texture (keep same handler)

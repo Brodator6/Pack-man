@@ -35,6 +35,8 @@ add_executable(Pac-Man
     Main.cpp
     TileSystem.cpp
     UpdateInput.cpp
+    GameManager.cpp
+    LevelLoader.cpp
     GUI/Windows/MainMenu.cpp
     GUI/Windows/GameMenu.cpp
     GUI/Windows/PauseMenu.cpp
@@ -42,9 +44,6 @@ add_executable(Pac-Man
     GUI/Elements/GUIElement.cpp
     GUI/Windows/MenuManager.cpp
     GUI/Windows/ResultsMenu.cpp
-    Entities/GameMaganer.cpp
-    LevelLoader.cpp
-    Entities/AI/AIUtils.cpp
     Entities/Player.cpp
     Entities/Pathfinding/Pathfinding.cpp
     Entities/EntityManager.cpp

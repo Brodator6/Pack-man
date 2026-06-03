@@ -10,9 +10,8 @@ class GameWindow;
 
 class MainMenu : public GUI{
 private:
-    Button startButton = Button(300, 300, 200, 50, this->StartTheGame(), "Start" , font, textColor, (*menuBlackboard.renderer));
-    Button settingsButton = Button(300, 400, 200, 50, this->SwitchToTheSettings(), "Settings" , font, textColor, (*menuBlackboard.renderer));
-    Button quitButton = Button(300, 400, 200, 50, this->Quit(), "Quit" , font, textColor, (*menuBlackboard.renderer));
+    Button startButton = Button(850, 300, 200, 50, this->StartTheGame(), "Start" , font, textColor, (*menuBlackboard.renderer));
+    Button quitButton = Button(850, 400, 200, 50, this->Quit(), "Quit" , font, textColor, (*menuBlackboard.renderer));
 
 public:
     void DrawWindow() override;

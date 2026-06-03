@@ -1,10 +1,10 @@
 #include "GameManager.h"
 
-#include "../UpdateInput.cpp"
-#include "AI/BehaviorTree.h"
-#include "../LevelLoader.h"
-#include "../TileSystem.h"
-#include "Player.h"
+#include "UpdateInput.cpp"
+#include "Entities/AI/BehaviorTree.h"
+#include "LevelLoader.h"
+#include "TileSystem.h"
+#include "Entities/Player.h"
 #include <filesystem>
 
 static std::string GetNextLevelPath(const std::string &currentPath) {//needs reviewing

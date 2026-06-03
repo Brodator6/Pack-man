@@ -68,7 +68,7 @@ public:
     }
     
     AbilityIcon(int x, int y, int width, int hight) : GUIElement(x, y, width, hight){
-        elementColor = { 0, 0, 0, 255};
+        elementColor = { 180, 110, 50, 255};
         textureRect = {
             rect.x + 10,
             rect.y + 10,

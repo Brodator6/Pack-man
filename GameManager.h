@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Player.h"
-#include "../TileData.h"
-#include "../DataStructs.h"
-#include "EntityManager.h"
-#include "EntityFactory.h"
+#include "Entities/Player.h"
+#include "TileData.h"
+#include "DataStructs.h"
+#include "Entities/EntityManager.h"
+#include "Entities/EntityFactory.h"
 
 #include <SDL3/SDL.h>
 #include <chrono>
@@ -28,7 +28,7 @@ public:
     std::string currentLevelName = "";
 
     Blackboard blackboard = {
-        20, 20,
+        25, 25,
         level,
         entityManager,
         entityFactory,

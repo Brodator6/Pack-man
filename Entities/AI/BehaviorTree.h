@@ -423,6 +423,12 @@ class PredictPlayersTurn : public Node
 public:
     NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
         if(MovementSystem::HasReachedNode(*enemyBB.position, *enemyBB.movement) && enemyBB.position->x == enemyBB.movement->LastSeenPlayerX && enemyBB.position->y == enemyBB.movement->LastSeenPlayerY && enemyBB.movement->isChasing){
+
+            int dirX = (enemyBB.movement->lastSeenDirection == EntityDirection::Right) - (enemyBB.movement->lastSeenDirection == EntityDirection::Left);
+            int dirY = (enemyBB.movement->lastSeenDirection == EntityDirection::Down) - (enemyBB.movement->lastSeenDirection == EntityDirection::Up);
+
+            enemyBB.AI->currentPath = {{enemyBB.position->x + dirX, enemyBB.position->y + dirY, true}};
+
             enemyBB.movement->LastSeenPlayerX = -1;
             enemyBB.movement->LastSeenPlayerY = -1;
             enemyBB.movement->isChasing = false;
@@ -432,7 +438,7 @@ public:
     }
 };
 
-class ClaymoreTriggerNode : public Node
+class MineTriggerNode : public Node
 {
 public:
     NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {

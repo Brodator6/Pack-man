@@ -114,9 +114,9 @@ void Player::UseAbility(){
         bool used = false;
 
         switch (ability.type) {
-            case AbilityType::Claymore: {
+            case AbilityType::Mine: {
                 if (frontX >= 0 && frontX < blackboard->columns && frontY >= 0 && frontY < blackboard->rows && blackboard->level[frontY][frontX].isWalkable) {
-                    blackboard->entityManager.AddEntity(frontX, frontY, positionComponent.direction, EntityType::Claymore);
+                    blackboard->entityManager.AddEntity(frontX, frontY, positionComponent.direction, EntityType::Mine);
                     used = true;
                 }
                 break;
@@ -208,7 +208,7 @@ Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> contro
     this->movementComponent = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
     renderComponent = {{nullptr}, {0, 0, 0, 0}};
 
-    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Claymore);
+    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Mine);
     abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
     abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
     abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);

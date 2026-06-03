@@ -70,7 +70,7 @@ void GameMenu::HandleGameLogic(){
     
     accumulator += timeBlackboard.currentTime - timeBlackboard.previousTickTime;    
     while(accumulator >= timeBlackboard.deltaTime){
-        scoreText.UpdateTextTexture(("Score: " + std::to_string(gameManager.entityManager.GetPlayer().score)), font, textColor);
+        scoreText.UpdateTextTexture(("Score: " + std::to_string(gameManager.entityManager.GetPlayer().score)), gameManager.entityManager.GetPlayer().score, font, {255, 255, 255, 0});
 
         gameManager.HandleGameLogic();
         abilityIcon1.UpdateChargesTexture(font, textColor);
@@ -78,12 +78,27 @@ void GameMenu::HandleGameLogic(){
         abilityIcon3.UpdateChargesTexture(font, textColor);
         abilityIcon4.UpdateChargesTexture(font, textColor);
         
+        // Check if player has accumulated enough score to unlock new ability
+        if(gameManager.entityManager.GetPlayer().score >= 200){
+            AbilityMenuBlackboard abb = {
+                gameManager.entityManager.GetPlayer().abilities,
+                &gameManager.blackboard.abilityFactory,
+                *menuBlackboard.renderer
+            };
+            menus->PushMenu(std::make_unique<AbilityMenu>(menus, menuBlackboard, timeBlackboard, abb));
+            gameManager.entityManager.GetPlayer().score = 0;
+        }
+        
         if(gameManager.lost){
             ResultDataBlackboard transferData = {"You Have Lost", gameManager.globalScore, true};
             menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
         }
         if(gameManager.globalScore >= gameManager.scoreGoal){
             ResultDataBlackboard transferData = {"You Have Won", gameManager.globalScore, false};
+            menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
+        }
+        if(gameManager.lost){
+            ResultDataBlackboard transferData = {"You Have Lost", gameManager.globalScore, true};
             menus->PushMenu(std::make_unique<ResultsMenu>(menus, menuBlackboard, timeBlackboard, transferData, this->ToTheNextLevel()));
         }
         

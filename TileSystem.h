@@ -1,6 +1,6 @@
 #pragma once
 #include "TileData.h"
-#include "Entities/GameManager.h"
+#include "GameManager.h"
 #include "./Entities/Player.h"
 #include <SDL3/SDL.h>
 

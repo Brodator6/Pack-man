@@ -5,7 +5,7 @@
 
 enum class AbilityType{
     None,
-    Claymore,
+    Mine,
     WallCharge,
     RoadBlocker,
     SpeedBoost,
@@ -51,8 +51,8 @@ public:
 
         switch (type)
         {
-        case AbilityType::Claymore:{
-            ability.type = AbilityType::Claymore;
+        case AbilityType::Mine:{
+            ability.type = AbilityType::Mine;
             ability.cooldownDuration = 5.0f;
             ability.duration = 0.0f;
             ability.charges = 5;

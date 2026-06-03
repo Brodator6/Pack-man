@@ -1,14 +1,14 @@
 {
   "name": "Level 2",
-  "scoreGoal": 1000,
+  "scoreGoal": 20,
   "player": {
     "x": 8,
     "y": 8
   },
   "enemies": [
-    { "type": "AdvancedEnemy", "x": 9, "y": 10 },
-    { "type": "AdvancedEnemy", "x": 3, "y": 2 },
-    { "type": "AdvancedEnemy", "x": 1, "y": 3 }
+    { "type": "CommandoLeaderEnemy", "x": 9, "y": 10 },
+    { "type": "CommandoEnemy", "x": 3, "y": 2 },
+    { "type": "CommandoEnemy", "x": 1, "y": 3 }
   ],
   "rows": [
     "####################",

@@ -1,5 +1,5 @@
 #include "LevelLoader.h"
-#include "Entities/GameManager.h"
+#include "GameManager.h"
 #include "Entities/Player.h"
 #include "Entities/EntityManager.h"
 #include "Entities/EntityFactory.h"
