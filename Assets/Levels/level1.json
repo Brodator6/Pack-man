@@ -1,13 +1,13 @@
 {
-  "name": "Level 1",
-  "scoreGoal": 1000,
+  "name": "Level 2",
+  "scoreGoal": 20,
   "player": {
     "x": 8,
     "y": 8
   },
   "enemies": [
-    { "type": "BasicEnemy", "x": 3, "y": 2 },
     { "type": "BasicEnemy", "x": 9, "y": 10 },
+    { "type": "BasicEnemy", "x": 3, "y": 2 },
     { "type": "BasicEnemy", "x": 1, "y": 3 }
   ],
   "rows": [

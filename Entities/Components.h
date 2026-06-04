@@ -94,7 +94,7 @@ struct CommandoOrder {
     int targetX = -1;
     int targetY = -1;
     bool holdPosition = false;
-    bool chaseReporter = false;
+    bool chase = false;
 };
 
 struct CommandoEnemyBlackboard : public AdvancedEnemyBlackboard{

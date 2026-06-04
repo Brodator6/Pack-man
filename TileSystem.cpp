@@ -31,7 +31,7 @@ void ApplyEffect(Player* player, TileData& tile) {
 void DrawTile(SDL_Renderer* renderer, const TileData& tile, SDL_FRect* rect, int x, int y, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize) {
     switch (tile.type) {
         case FLOOR:
-            SDL_SetRenderDrawColor(renderer, 100, 255, 0, SDL_ALPHA_OPAQUE);
+            SDL_SetRenderDrawColor(renderer, 120, 120, 120, SDL_ALPHA_OPAQUE);
             break;
         case WALL:
             SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);

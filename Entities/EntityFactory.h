@@ -101,18 +101,18 @@ private:
         auto increaseTickCounter = std::make_unique<IncreaseTickCounter>();
         root->AddChildNode(std::move(increaseTickCounter));
 
-        auto engageSequence = std::make_unique<SequenceNode>();
-        engageSequence->AddChildNode(std::make_unique<FindTarget>());
-        engageSequence->AddChildNode(std::make_unique<ShareTargetInformationNode>());
-        engageSequence->AddChildNode(std::make_unique<PlanCommandoAmbushNode>());
-        engageSequence->AddChildNode(std::make_unique<FindPathNode>());
-        root->AddChildNode(std::move(engageSequence));
+        auto findAndPlan = std::make_unique<SequenceNode>();
+        findAndPlan->AddChildNode(std::make_unique<FindTarget>());
+        findAndPlan->AddChildNode(std::make_unique<ShareTargetInformationNode>());
+        findAndPlan->AddChildNode(std::make_unique<PlanCommandoAmbushNode>());
+        findAndPlan->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(findAndPlan));
 
-        auto useSharedSequence = std::make_unique<SequenceNode>();
-        useSharedSequence->AddChildNode(std::make_unique<UseSharedTargetInformationNode>());
-        useSharedSequence->AddChildNode(std::make_unique<PlanCommandoAmbushNode>());
-        useSharedSequence->AddChildNode(std::make_unique<FindPathNode>());
-        root->AddChildNode(std::move(useSharedSequence));
+        auto checkSharedData = std::make_unique<SequenceNode>();
+        checkSharedData->AddChildNode(std::make_unique<UseSharedTargetInformationNode>());
+        checkSharedData->AddChildNode(std::make_unique<PlanCommandoAmbushNode>());
+        checkSharedData->AddChildNode(std::make_unique<FindPathNode>());
+        root->AddChildNode(std::move(checkSharedData));
         
         auto SearchForPlayer = std::make_unique<SequenceNode>();
         SearchForPlayer->AddChildNode(std::make_unique<PredictPlayersTurn>());
@@ -166,7 +166,7 @@ public:
             case EntityType::CommandoLeaderEnemy: {
                 enemyType = EnemyType::CommandoEnemy;
                 AI = CreateLeaderCommandoAI();
-                renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/CommandoEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
+                renderComponents[entityID] = {textureManager.getTexture("./Assets/Sprites/BasicEnemySprite.png"), SDL_FRect{0, 0, 0, 0}};
                 break;
             }
             default: break;

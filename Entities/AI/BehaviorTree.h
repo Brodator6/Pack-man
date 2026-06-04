@@ -129,7 +129,7 @@ class FindPathNode : public Node
 {
 public:
     NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-        if(enemyBB.AI->tickCounter < 25 && !enemyBB.AI->currentPath.empty()) return NodeStatus::FAILURE;
+        if(enemyBB.AI->tickCounter < 15 && !enemyBB.AI->currentPath.empty()) return NodeStatus::FAILURE;
         enemyBB.AI->tickCounter = 0;
 
         Grid gameGrid;
@@ -156,8 +156,38 @@ public:
             return NodeStatus::FAILURE;
         }
 
-        if (order.chaseReporter) {
-            return NodeStatus::FAILURE;
+        int dirX =  (enemyBB.position->direction == EntityDirection::Right) - (enemyBB.position->direction == EntityDirection::Left);
+        int dirY = (enemyBB.position->direction == EntityDirection::Down) - (enemyBB.position->direction == EntityDirection::Up);
+
+        int checkX = enemyBB.position->x;
+        int checkY = enemyBB.position->y;
+
+        while (true) {//check till first wall
+            checkX += dirX;
+            checkY += dirY;
+            
+            if (checkX < 0 || checkX >= bb.columns || checkY < 0 || checkY >= bb.rows || !bb.level[checkY][checkX].isWalkable){ 
+                break;// out of bounds?
+            }
+
+            for (int slot = 0; slot < 3; ++slot) {
+                if (bb.entityManager.shadowGrid[checkY * bb.columns + checkX].entityIDs[slot] == 0) {
+                    enemyBB.movement->goalX = checkX;
+                    enemyBB.movement->goalY = checkY;
+                    enemyBB.movement->LastSeenPlayerX = checkX;
+                    enemyBB.movement->LastSeenPlayerY = checkY;
+                    enemyBB.movement->lastSeenDirection = bb.entityManager.GetPlayer().positionComponent.direction;
+                    enemyBB.movement->isChasing = true;
+
+                    enemyBB.blackboardComponent->sharedBB->ShareTargetInformation(
+                        enemyBB.entityID,
+                        enemyBB.movement->LastSeenPlayerX,
+                        enemyBB.movement->LastSeenPlayerY,
+                        enemyBB.movement->lastSeenDirection,
+                        true);
+                    break;
+                }
+            }
         }
 
         if (enemyBB.position->x == order.targetX && enemyBB.position->y == order.targetY) {
@@ -167,17 +197,25 @@ public:
                 enemyBB.movement->isChasing = false;
                 enemyBB.AI->currentPath.clear();
                 return NodeStatus::SUCCESS;
+            } else if (order.chase){
+                enemyBB.AI->currentPath.clear();
+                bb.entityManager.commandoEnemyBlackboard.orders.erase(enemyBB.entityID);
+                return NodeStatus::FAILURE;
             }
             return NodeStatus::FAILURE;
         }
 
-        if (enemyBB.movement->goalX != order.targetX || enemyBB.movement->goalY != order.targetY || enemyBB.AI->currentPath.empty()) {
+        // Only recalculate path if agent has reached their current node (not mid-movement)
+        bool hasReachedNode = MovementSystem::HasReachedNode(*enemyBB.position, *enemyBB.movement);
+        
+        if (hasReachedNode && (enemyBB.movement->goalX != order.targetX || enemyBB.movement->goalY != order.targetY || enemyBB.AI->currentPath.empty())) {
             enemyBB.movement->goalX = order.targetX;
             enemyBB.movement->goalY = order.targetY;
             enemyBB.movement->isChasing = false;
 
             Grid gameGrid = Grid::GenerateGrid(&bb.level);
             APAthFinding pathFinding;
+            // Start pathfinding from the nearest tile (the one agent has reached)
             enemyBB.AI->currentPath = pathFinding.FindPath({enemyBB.position->x, enemyBB.position->y}, {enemyBB.movement->goalX, enemyBB.movement->goalY}, &gameGrid);
         }
 
@@ -187,7 +225,8 @@ public:
 
 class PlanCommandoAmbushNode : public Node {
 private:
-    int cooldown = 60;
+    int cooldown = 30;
+    int interceptionChance = 40;
 
     std::pair<int,int> DirFromDirection(int direction) const {
         switch (direction) {
@@ -203,16 +242,71 @@ private:
         return x >= 0 && x < bb.columns && y >= 0 && y < bb.rows && bb.level[y][x].isWalkable;
     }
 
+    std::pair<int,int> GetPerpendicularLeft(std::pair<int,int> dir) const {
+        return {-dir.second, dir.first};
+    }
+
+    // Generate blocking points at distance range [minDist, maxDist] from target
+    void GenerateBlockingPoints(
+        std::vector<std::pair<int,int>>& blockingPoints,
+        const Blackboard& bb,
+        int targetX, int targetY,
+        std::pair<int,int> forward,
+        std::pair<int,int> left,
+        std::pair<int,int> right,
+        int minDist = 2, int maxDist = 7)
+    {
+        auto pushCandidate = [&](int x, int y) {
+            if (IsWalkable(bb, x, y)) {
+                for (auto& candidate : blockingPoints) {
+                    if (candidate.first == x && candidate.second == y) return;
+                }
+                blockingPoints.emplace_back(x, y);
+            }
+        };
+
+        // Generate front blocking positions (straight ahead, 2-7 tiles)
+        for (int dist = minDist; dist <= maxDist; ++dist) {
+            pushCandidate(targetX + forward.first * dist, targetY + forward.second * dist);
+        }
+
+        // Generate left flank positions
+        for (int dist = minDist; dist <= maxDist; ++dist) {
+            pushCandidate(targetX + left.first * dist, targetY + left.second * dist);
+        }
+
+        // Generate right flank positions
+        std::pair<int,int> right_dir = {-left.first, -left.second};
+        for (int dist = minDist; dist <= maxDist; ++dist) {
+            pushCandidate(targetX + right_dir.first * dist, targetY + right_dir.second * dist);
+        }
+
+        // Fallback: generate closer positions if needed
+        if (blockingPoints.empty()) {
+            for (int dist = 1; dist < minDist; ++dist) {
+                pushCandidate(targetX + forward.first * dist, targetY + forward.second * dist);
+                pushCandidate(targetX + left.first * dist, targetY + left.second * dist);
+                pushCandidate(targetX + right_dir.first * dist, targetY + right_dir.second * dist);
+            }
+        }
+    }
+
+    // Manhattan distance helper
+    int ManhattanDistance(int x1, int y1, int x2, int y2) const {
+        return std::abs(x1 - x2) + std::abs(y1 - y2);
+    }
+
+    // Check if agent is behind or to the side of player (not in front)
+    bool IsAgentBehindOrSide(int agentX, int agentY, int playerX, int playerY, std::pair<int,int> forward) const {
+        int distAlongForward = (agentX - playerX) * forward.first + (agentY - playerY) * forward.second;
+        return distAlongForward <= 0;
+    }
+
 public:
     NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
         auto& commandoBB = bb.entityManager.commandoEnemyBlackboard;
-        SharedTargetInfo target = commandoBB.GetLatestSharedTarget();
-        if (!target.isValidInfo) {
-            commandoBB.ClearOrders();
-            commandoBB.commandTickCount = 0;
-            return NodeStatus::FAILURE;
-        }
 
+        // Update shared target info if leader is chasing
         if (enemyBB.movement->isChasing) {
             commandoBB.ShareTargetInformation(
                 enemyBB.entityID,
@@ -220,33 +314,23 @@ public:
                 enemyBB.movement->LastSeenPlayerY,
                 enemyBB.movement->lastSeenDirection,
                 true);
-            target = commandoBB.GetLatestSharedTarget();
+        }
+
+        SharedTargetInfo target = commandoBB.GetLatestSharedTarget();
+        
+        if (!target.isValidInfo) {
+            commandoBB.ClearOrders();
+            commandoBB.commandTickCount = 0;
+            return NodeStatus::FAILURE;
         }
 
         std::pair<int,int> forward = DirFromDirection(target.lastSeenDirection);
-        std::pair<int,int> left = {-forward.second, forward.first};
-        std::pair<int,int> right = {forward.second, -forward.first};
+        std::pair<int,int> left = GetPerpendicularLeft(forward);
+        std::pair<int,int> right = {-left.first, -left.second};
 
+        // Generate blocking positions at distance 2-4 tiles
         std::vector<std::pair<int,int>> blockingPoints;
-        auto pushCandidate = [&](int x, int y) {
-            if (IsWalkable(bb, x, y)) {
-                for (auto &candidate : blockingPoints) {
-                    if (candidate.first == x && candidate.second == y) return;
-                }
-                blockingPoints.emplace_back(x, y);
-            }
-        };
-
-        pushCandidate(target.lastSeenX + forward.first * 2, target.lastSeenY + forward.second * 2);
-        pushCandidate(target.lastSeenX + left.first * 2, target.lastSeenY + left.second * 2);
-        pushCandidate(target.lastSeenX + right.first * 2, target.lastSeenY + right.second * 2);
-        pushCandidate(target.lastSeenX - forward.first * 2, target.lastSeenY - forward.second * 2);
-        if (blockingPoints.empty()) {
-            pushCandidate(target.lastSeenX + forward.first, target.lastSeenY + forward.second);
-            pushCandidate(target.lastSeenX + left.first, target.lastSeenY + left.second);
-            pushCandidate(target.lastSeenX + right.first, target.lastSeenY + right.second);
-            pushCandidate(target.lastSeenX - forward.first, target.lastSeenY - forward.second);
-        }
+        GenerateBlockingPoints(blockingPoints, bb, target.lastSeenX, target.lastSeenY, forward, left, right, 2, 4);
 
         if (blockingPoints.empty()) {
             commandoBB.ClearOrders();
@@ -257,77 +341,96 @@ public:
         auto& positions = bb.entityManager.GetPositionComponents();
         auto& types = bb.entityManager.GetTypeComponents();
 
+        // Collect all commando agents (excluding leader)
         std::vector<int> commandoAgents;
         for (int memberID : commandoBB.MemberIDs) {
             auto typeIt = types.find(memberID);
             if (typeIt == types.end()) continue;
-            if (typeIt->second.enemyType == EnemyType::CommandoEnemy) {
-                if (memberID != commandoBB.commanderID) {
-                    commandoAgents.push_back(memberID);
-                }
+            if (typeIt->second.enemyType == EnemyType::CommandoEnemy && memberID != commandoBB.commanderID) {
+                commandoAgents.push_back(memberID);
             }
         }
 
         if (commandoAgents.empty()) {
-            commandoBB.ClearOrders();//need reviewing
+            commandoBB.ClearOrders();
             commandoBB.commandTickCount = 0;
             return NodeStatus::FAILURE;
         }
 
         std::vector<std::pair<int,int>> availableTargets = blockingPoints;
-        Grid gameGrid = Grid::GenerateGrid(&bb.level);
-        APAthFinding pathFinding;
-
-        auto distanceToPoint = [&](int startX, int startY, int goalX, int goalY) {
-            auto path = pathFinding.FindPath({startX, startY}, {goalX, goalY}, &gameGrid);
-            if (path.empty()) return INT_MAX;
-            return static_cast<int>(path.size());
-        };
 
         if (commandoBB.commandTickCount >= cooldown || commandoBB.orders.empty()) {
             commandoBB.orders.clear();
             commandoBB.commandTickCount = 0;
+            enemyBB.AI->currentPath = {};
 
+            std::vector<int> blockerAgents; // Track agents assigned as blockers for interception
+
+            // STAGE 1: Assign reporter to chase the target
             int reporterID = target.reporterID;
             if (reporterID >= 0 && std::find(commandoAgents.begin(), commandoAgents.end(), reporterID) != commandoAgents.end()) {
                 commandoBB.AssignOrder(reporterID, CommandoOrder{true, target.lastSeenX, target.lastSeenY, false, true});
                 commandoAgents.erase(std::remove(commandoAgents.begin(), commandoAgents.end(), reporterID), commandoAgents.end());
             }
 
+            // STAGE 2: Send agents that are behind or to the side to chase (flanking attempts)
+            for (auto it = commandoAgents.begin(); it != commandoAgents.end(); ) {
+                int commandoID = *it;
+                auto posIt = positions.find(commandoID);
+                
+                if (posIt == positions.end()) {
+                    ++it;
+                    continue;
+                }
+
+                if (IsAgentBehindOrSide(posIt->second.x, posIt->second.y, target.lastSeenX, target.lastSeenY, forward)) {
+                    commandoBB.AssignOrder(commandoID, CommandoOrder{true, target.lastSeenX, target.lastSeenY, false, true});
+                    it = commandoAgents.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+
+            // STAGE 3: Assign remaining agents to blocking positions
             for (int commandoID : commandoAgents) {
                 auto posIt = positions.find(commandoID);
                 if (posIt == positions.end()) continue;
 
-                int bestDistance = INT_MAX;
-                int bestIndex = 0;
-                for (int index = 0; index < static_cast<int>(availableTargets.size()); ++index) {
-                    auto [tx, ty] = availableTargets[index];
-                    int dist = distanceToPoint(posIt->second.x, posIt->second.y, tx, ty);
-                    if (dist < bestDistance) {
-                        bestDistance = dist;
-                        bestIndex = index;
-                    }
-                }
+                int agentX = posIt->second.x;
+                int agentY = posIt->second.y;
 
                 if (!availableTargets.empty()) {
+                    // Find nearest blocking position
+                    int bestDistance = INT_MAX;
+                    int bestIndex = 0;
+                    for (int index = 0; index < static_cast<int>(availableTargets.size()); ++index) {
+                        auto [tx, ty] = availableTargets[index];
+                        int dist = ManhattanDistance(agentX, agentY, tx, ty);
+                        if (dist < bestDistance) {
+                            bestDistance = dist;
+                            bestIndex = index;
+                        }
+                    }
+
                     auto [targetX, targetY] = availableTargets[bestIndex];
                     commandoBB.AssignOrder(commandoID, CommandoOrder{true, targetX, targetY, true, false});
+                    blockerAgents.push_back(commandoID);
                     availableTargets.erase(availableTargets.begin() + bestIndex);
+                } else {
+                    commandoBB.AssignOrder(commandoID, CommandoOrder{true, target.lastSeenX, target.lastSeenY, false, true});
                 }
             }
+
+            // STAGE 4: Occasionally send some blockers on longer interception routes to confuse player
+            if (!blockerAgents.empty() && std::rand() % 100 < interceptionChance) {
+                int randomBlockerIdx = std::rand() % blockerAgents.size();
+                int blockerId = blockerAgents[randomBlockerIdx];
+                commandoBB.AssignOrder(blockerId, CommandoOrder{true, target.lastSeenX, target.lastSeenY, false, true});
+            }
+
         } else {
             commandoBB.commandTickCount++;
         }
-
-        // Ensure leader keeps moving toward target information if possible
-        if (!enemyBB.movement->isChasing) {
-            enemyBB.movement->goalX = target.lastSeenX;
-            enemyBB.movement->goalY = target.lastSeenY;
-            enemyBB.movement->LastSeenPlayerX = target.lastSeenX;
-            enemyBB.movement->LastSeenPlayerY = target.lastSeenY;
-            enemyBB.movement->isChasing = true;
-        }
-
         return NodeStatus::SUCCESS;
     }
 };
