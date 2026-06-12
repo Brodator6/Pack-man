@@ -67,7 +67,7 @@ public:
             ability.duration = 0.0f;
             ability.charges = 5;
             ability.isConsumable = true;
-            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/testSprite.png"), SDL_DestroyTexture);
+            ability.texture = std::shared_ptr<SDL_Texture>(IMG_LoadTexture(renderer, "./Assets/Sprites/WallChargeSprite.png"), SDL_DestroyTexture);
             break;
         }
 

@@ -200,13 +200,30 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
     this->renderComponent.rect.y = widthMargine + positionComponent.visualY * cellWidth + 5;
     this->renderComponent.rect.w = squareSize - 10;
     this->renderComponent.rect.h = squareSize - 10;
-    SDL_RenderTextureRotated(renderer, renderComponent.texture.get(), NULL, &renderComponent.rect, (0.0 + ((positionComponent.direction == EntityDirection::Up) * 90.0) + ((positionComponent.direction == EntityDirection::Right) * 180.0) + ((positionComponent.direction == EntityDirection::Down) * 270.0)), NULL, SDL_FLIP_NONE);
+
+    Animation &animationData = this->renderComponent.animation;
+    animationData.sourceRect.x = animationData.spriteSequence[animationData.spriteIndex].first;
+    animationData.sourceRect.y = animationData.spriteSequence[animationData.spriteIndex].second;
+
+    SDL_RenderTextureRotated(renderer, renderComponent.texture.get(), &animationData.sourceRect, &renderComponent.rect,
+                             (0.0 + ((positionComponent.direction == EntityDirection::Up) * 90.0) +
+                              ((positionComponent.direction == EntityDirection::Right) * 180.0) +
+                              ((positionComponent.direction == EntityDirection::Down) * 270.0)),
+                             NULL, SDL_FLIP_NONE);
+
+    animationData.timer++;
+    if (animationData.timer % animationData.frameTime == 0) {
+        animationData.spriteIndex = (animationData.spriteIndex + 1) % animationData.spriteSequence.size();
+    }
+    if (animationData.timer >= animationData.frameTime) {
+        animationData.timer = 0;
+    }
 }
 
 Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> controlsMap):blackboard{bb}, controls{controlsMap} {
     positionComponent = {x, y, static_cast<float>(x), static_cast<float>(y), EntityDirection::Down};
     this->movementComponent = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
-    renderComponent = {{nullptr}, {0, 0, 0, 0}};
+    renderComponent = {nullptr, {0, 0, 0, 0}, Animation{}};
 
     abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Mine);
     abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);

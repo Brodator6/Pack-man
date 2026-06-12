@@ -51,13 +51,11 @@ void EntityManager::UpdateState(){
     if(!removalQueue.empty()){
         for(int id : removalQueue){
             if(id == player.ID){
-                //show score window with "try again"
-                std::cout << "death" << std::endl;
                 return;
             }
 
             auto typeIt = typeComponents.find(id);//need reviewing
-            if (typeIt != typeComponents.end() && typeIt->second.enemyType == EnemyType::CommandoEnemy) {
+            if (typeIt != typeComponents.end() && (typeIt->second.entityType == EntityType::CommandoEnemy || typeIt->second.entityType == EntityType::CommandoLeaderEnemy)) {
                 if (id == commandoEnemyBlackboard.commanderID) {
                     commandoEnemyBlackboard.commanderID = -1;
                     commandoEnemyBlackboard.ClearOrders();

@@ -19,7 +19,7 @@ public:
     PositionComponent positionComponent;
     MovementComponent movementComponent;
     RenderComponent renderComponent;
-    
+
     // Player-specific data
     Ability abilities[4];
     int ID = 0;

@@ -119,9 +119,23 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
             renderComp.rect.y = widthMargin + pos.visualY * cellWidth + 5;
             renderComp.rect.w = squareSize - 10;
             renderComp.rect.h = squareSize - 10;
-            SDL_RenderTextureRotated(renderer, renderComp.texture.get(), NULL, &renderComp.rect, 
-                                     (0.0 + ((pos.direction == EntityDirection::Up) * 90.0) + ((pos.direction == EntityDirection::Right) * 180.0) + ((pos.direction == EntityDirection::Down) * 270.0)), NULL, SDL_FLIP_NONE);
-                                      
+
+            Animation &animationData = renderComp.animation;
+            animationData.sourceRect.x = animationData.spriteSequence[animationData.spriteIndex].first;
+            animationData.sourceRect.y = animationData.spriteSequence[animationData.spriteIndex].second;
+
+            SDL_RenderTextureRotated(renderer, renderComp.texture.get(), &animationData.sourceRect, &renderComp.rect,
+                                     (0.0 + ((pos.direction == EntityDirection::Up) * 90.0) +
+                                      ((pos.direction == EntityDirection::Right) * 180.0) +
+                                      ((pos.direction == EntityDirection::Down) * 270.0)), NULL, SDL_FLIP_NONE);
+
+            animationData.timer++;
+            if (animationData.timer % animationData.frameTime == 0) {
+                animationData.spriteIndex = (animationData.spriteIndex + 1) % animationData.spriteSequence.size();
+            }
+            if (animationData.timer >= animationData.frameTime) {
+                animationData.timer = 0;
+            }
         }
     }
 }

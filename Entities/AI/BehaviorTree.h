@@ -109,7 +109,7 @@ public:
             }
 
             for (int slot = 0; slot < 3; ++slot) {
-                if (bb.entityManager.shadowGrid[checkY * bb.columns + checkX].entityIDs[slot] == 0) {
+                if (bb.entityManager.shadowGrid[checkY * bb.columns + checkX].entityIDs[slot] == 0 ) {
                     enemyBB.movement->goalX = checkX;
                     enemyBB.movement->goalY = checkY;
                     enemyBB.movement->LastSeenPlayerX = checkX;
@@ -144,11 +144,282 @@ public:
         return NodeStatus::SUCCESS;
     }
 };
-//needs reviewing
+
+class JunctionDesitionNode : public Node {
+private:
+    struct Choice {
+        std::pair<int, int> pos;
+        int weight;
+    };
+
+    struct {
+        int ForwardWeight;
+        int SidewayWeight;
+        int BackwardWeight;
+    } Weights;
+
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+
+        int x = enemyBB.position->x;
+        int y = enemyBB.position->y;
+        
+        int dirX = (enemyBB.position->direction == EntityDirection::Right) - (enemyBB.position->direction == EntityDirection::Left);
+        int dirY = (enemyBB.position->direction == EntityDirection::Down) - (enemyBB.position->direction == EntityDirection::Up);
+
+        if (MovementSystem::HasReachedNode(*enemyBB.position, *enemyBB.movement) && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !enemyBB.movement->isChasing) {
+            const std::pair<int, int> dirs[4] = {{0,-1}, {1,0}, {0,1}, {-1,0}};
+
+            std::vector<Choice> weightedChoices;
+            int totalWeight = 0;
+
+            for (auto [dx, dy] : dirs) {
+                int nx = x + dx, ny = y + dy;
+
+                // Validation
+                if (nx >= 0 && nx < bb.columns && ny >= 0 && ny < bb.rows && bb.level[ny][nx].isWalkable) {
+                    int weight = Weights.SidewayWeight; // Base weight for turns
+
+                    if (dx == dirX && dy == dirY) {
+                        weight = Weights.ForwardWeight;
+                    } else if (dx == -dirX && dy == -dirY) {
+                        weight = Weights.BackwardWeight;
+                    }
+
+                    weightedChoices.push_back({{nx, ny}, weight});
+                    totalWeight += weight;
+                }
+            }
+
+            if (weightedChoices.empty()) return NodeStatus::FAILURE;
+
+            int roll = std::rand() % totalWeight;
+            int currentSum = 0;
+            std::pair<int, int> selection;
+
+            for (const auto& choice : weightedChoices) {
+                currentSum += choice.weight;
+                if (roll < currentSum) {
+                    selection = choice.pos;
+                    break;
+                }
+            }
+
+            enemyBB.movement->goalX = selection.first;
+            enemyBB.movement->goalY = selection.second;
+            enemyBB.AI->currentPath = {{selection.first, selection.second, true}};
+            return NodeStatus::SUCCESS;
+        }
+        
+        if(!bb.level[y + dirY][x + dirX].isWalkable){
+            enemyBB.position->direction = static_cast<EntityDirection>((enemyBB.position->direction + 2) % 4);
+            dirX *=-1;
+            dirY *= -1;
+        }
+
+        if(enemyBB.AI->currentPath.empty()){
+            enemyBB.AI->currentPath = {{x + dirX, y + dirY, true}};
+            return NodeStatus::SUCCESS;   
+        }
+        return NodeStatus::FAILURE;
+    }
+
+    JunctionDesitionNode(int forwardWeight, int sidewayWeight,  int backwardWeight){
+        Weights.SidewayWeight = sidewayWeight;
+        Weights.ForwardWeight = forwardWeight;
+        Weights.BackwardWeight = backwardWeight;
+    }
+};
+
+class PredictPlayersTurn : public Node
+{
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        if(MovementSystem::HasReachedNode(*enemyBB.position, *enemyBB.movement) && enemyBB.position->x == enemyBB.movement->LastSeenPlayerX && enemyBB.position->y == enemyBB.movement->LastSeenPlayerY && enemyBB.movement->isChasing){
+
+            int dirX = (enemyBB.movement->lastSeenDirection == EntityDirection::Right) - (enemyBB.movement->lastSeenDirection == EntityDirection::Left);
+            int dirY = (enemyBB.movement->lastSeenDirection == EntityDirection::Down) - (enemyBB.movement->lastSeenDirection == EntityDirection::Up);
+
+            enemyBB.AI->currentPath = {{enemyBB.position->x + dirX, enemyBB.position->y + dirY, true}};
+
+            enemyBB.movement->LastSeenPlayerX = -1;
+            enemyBB.movement->LastSeenPlayerY = -1;
+            enemyBB.movement->isChasing = false;
+            return NodeStatus::SUCCESS;
+        }
+        return NodeStatus::FAILURE;
+    }
+};
+
+class MineTriggerNode : public Node
+{
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        int originX = enemyBB.position->x;
+        int originY = enemyBB.position->y;
+
+        const GridCell* cell = bb.entityManager.GetGridCell(originX, originY);
+        if (cell == nullptr) {
+            return NodeStatus::FAILURE;
+        }
+
+        std::vector<int> toRemove;
+        for (int slot = 0; slot < 3; ++slot) {
+            int id = cell->entityIDs[slot];
+            if (id < 0 || id == enemyBB.entityID) {
+                continue;
+            }
+            
+            toRemove.push_back(id);
+        }
+
+        if (toRemove.empty()) {
+            return NodeStatus::FAILURE;
+        }
+
+        for (int id : toRemove) {
+            bb.entityManager.RequestRemoveEntityByID(id);
+        }
+
+        bb.entityManager.RequestRemoveEntityByID(enemyBB.entityID);
+
+        return NodeStatus::SUCCESS;
+    }
+};
+
+class WallChargeDetonateNode : public Node
+{
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        if (enemyBB.staticComp->timer > 0) {
+            enemyBB.staticComp->timer -= 1;
+            return NodeStatus::RUNNING;
+        }
+
+        int originX = enemyBB.position->x;
+        int originY = enemyBB.position->y;
+
+        for (int dy = -1; dy <= 1; ++dy) {
+            for (int dx = -1; dx <= 1; ++dx) {
+                int x = originX + dx;
+                int y = originY + dy;
+                if (x < 0 || x >= bb.columns || y < 0 || y >= bb.rows) {
+                    continue;
+                }
+                const GridCell* cell = bb.entityManager.GetGridCell(x, y);
+                if (cell == nullptr) {
+                    continue;
+                }
+                std::vector<int> toRemove;
+                for (int slot = 0; slot < 3; ++slot) {
+                    int id = cell->entityIDs[slot];
+                    if (id >= 0 && id != enemyBB.entityID) {
+                        toRemove.push_back(id);
+                    }
+                }
+                for (int id : toRemove) {
+                    bb.entityManager.RequestRemoveEntityByID(id);
+                }
+                bb.entityManager.RequestRemoveEntityByID(enemyBB.entityID);
+            }
+        }
+
+        if (originX >= 0 && originX < bb.columns && originY >= 0 && originY < bb.rows) {
+            bb.level[originY][originX].type = FLOOR;
+            bb.level[originY][originX].isWalkable = true;
+        }
+
+        if (enemyBB.entityID >= 0) {
+            bb.entityManager.RequestRemoveEntityByID(enemyBB.entityID);
+        }
+
+        return NodeStatus::SUCCESS;
+    }
+};
+
+class ShareTargetInformationNode : public Node
+{
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        if (!enemyBB.blackboardComponent || !enemyBB.blackboardComponent->sharedBB) {
+            return NodeStatus::FAILURE;
+        }
+
+        auto* sharedBB = enemyBB.blackboardComponent->sharedBB;
+
+        if (enemyBB.movement->isChasing) {
+            sharedBB->ShareTargetInformation(
+                enemyBB.entityID,
+                enemyBB.movement->LastSeenPlayerX,
+                enemyBB.movement->LastSeenPlayerY,
+                enemyBB.movement->lastSeenDirection,
+                true);
+            return NodeStatus::SUCCESS;
+        }
+        
+        return NodeStatus::FAILURE;
+    }
+};
+
+class UseSharedTargetInformationNode : public Node
+{
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        if (!enemyBB.blackboardComponent || !enemyBB.blackboardComponent->sharedBB) {
+            return NodeStatus::FAILURE;
+        }
+
+        auto* sharedBB = enemyBB.blackboardComponent->sharedBB;
+
+        SharedTargetInfo target = sharedBB->GetLatestSharedTarget();
+
+        if (target.lastSeenX != enemyBB.movement->goalX && target.lastSeenY != enemyBB.movement->goalY && sharedBB->sharedTarget.isValidInfo) {
+            enemyBB.movement->goalX = target.lastSeenX;
+            enemyBB.movement->goalY = target.lastSeenY;
+            enemyBB.movement->LastSeenPlayerX = target.lastSeenX;
+            enemyBB.movement->LastSeenPlayerY = target.lastSeenY;
+            enemyBB.movement->isChasing = true;
+            return NodeStatus::SUCCESS;
+        }
+        
+        return NodeStatus::FAILURE;
+    }
+};
+
+class UpdateSharedData : public Node
+{
+public:
+    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        if (!enemyBB.blackboardComponent || !enemyBB.blackboardComponent->sharedBB) {
+            return NodeStatus::FAILURE;
+        }
+
+        auto* sharedBB = enemyBB.blackboardComponent->sharedBB;
+
+        sharedBB->ShareTargetInformation(
+            enemyBB.entityID,
+            enemyBB.movement->LastSeenPlayerX,
+            enemyBB.movement->LastSeenPlayerY,
+            enemyBB.movement->lastSeenDirection,
+            false);
+
+        if (sharedBB == &bb.entityManager.commandoEnemyBlackboard) {
+            bb.entityManager.commandoEnemyBlackboard.ClearOrders();
+            bb.entityManager.commandoEnemyBlackboard.commandTickCount = 0;
+        }
+
+        std::cout << "no target on the position" << std::endl;
+        return NodeStatus::SUCCESS;
+    }
+};
 
 class ExecuteCommandoOrderNode : public Node {
 public:
     NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
+        if (!enemyBB.blackboardComponent || !enemyBB.blackboardComponent->sharedBB) {
+            return NodeStatus::FAILURE;
+        }
+
         CommandoOrder order = bb.entityManager.commandoEnemyBlackboard.GetOrder(enemyBB.entityID);
 
         if (!order.isAssigned || order.targetX < 0 || order.targetY < 0 || order.targetX >= bb.columns || order.targetY >= bb.rows) {
@@ -339,16 +610,13 @@ public:
         }
 
         auto& positions = bb.entityManager.GetPositionComponents();
-        auto& types = bb.entityManager.GetTypeComponents();
 
-        // Collect all commando agents (excluding leader)
+        // Collect only the registered commando members, excluding the leader planning this ambush.
         std::vector<int> commandoAgents;
         for (int memberID : commandoBB.MemberIDs) {
-            auto typeIt = types.find(memberID);
-            if (typeIt == types.end()) continue;
-            if (typeIt->second.enemyType == EnemyType::CommandoEnemy && memberID != commandoBB.commanderID) {
-                commandoAgents.push_back(memberID);
-            }
+            if (memberID == commandoBB.commanderID) continue;
+            if (positions.find(memberID) == positions.end()) continue;
+            commandoAgents.push_back(memberID);
         }
 
         if (commandoAgents.empty()) {
@@ -431,262 +699,6 @@ public:
         } else {
             commandoBB.commandTickCount++;
         }
-        return NodeStatus::SUCCESS;
-    }
-};
-
-class JunctionDesitionNode : public Node {
-private:
-    struct Choice {
-        std::pair<int, int> pos;
-        int weight;
-    };
-
-    struct {
-        int ForwardWeight;
-        int SidewayWeight;
-        int BackwardWeight;
-    } Weights;
-
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-
-        int x = enemyBB.position->x;
-        int y = enemyBB.position->y;
-        
-        int dirX = (enemyBB.position->direction == EntityDirection::Right) - (enemyBB.position->direction == EntityDirection::Left);
-        int dirY = (enemyBB.position->direction == EntityDirection::Down) - (enemyBB.position->direction == EntityDirection::Up);
-
-        if (MovementSystem::HasReachedNode(*enemyBB.position, *enemyBB.movement) && (bb.level[y + dirX][x + dirY].isWalkable || bb.level[y + dirX * -1][x + dirY * -1].isWalkable) && !enemyBB.movement->isChasing) {
-            const std::pair<int, int> dirs[4] = {{0,-1}, {1,0}, {0,1}, {-1,0}};
-
-            std::vector<Choice> weightedChoices;
-            int totalWeight = 0;
-
-            for (auto [dx, dy] : dirs) {
-                int nx = x + dx, ny = y + dy;
-
-                // Validation
-                if (nx >= 0 && nx < bb.columns && ny >= 0 && ny < bb.rows && bb.level[ny][nx].isWalkable) {
-                    int weight = Weights.SidewayWeight; // Base weight for turns
-
-                    if (dx == dirX && dy == dirY) {
-                        weight = Weights.ForwardWeight;
-                    } else if (dx == -dirX && dy == -dirY) {
-                        weight = Weights.BackwardWeight;
-                    }
-
-                    weightedChoices.push_back({{nx, ny}, weight});
-                    totalWeight += weight;
-                }
-            }
-
-            if (weightedChoices.empty()) return NodeStatus::FAILURE;
-
-            int roll = std::rand() % totalWeight;
-            int currentSum = 0;
-            std::pair<int, int> selection;
-
-            for (const auto& choice : weightedChoices) {
-                currentSum += choice.weight;
-                if (roll < currentSum) {
-                    selection = choice.pos;
-                    break;
-                }
-            }
-
-            enemyBB.movement->goalX = selection.first;
-            enemyBB.movement->goalY = selection.second;
-            enemyBB.AI->currentPath = {{selection.first, selection.second, true}};
-            return NodeStatus::SUCCESS;
-        }
-        
-        if(!bb.level[y + dirY][x + dirX].isWalkable){
-            enemyBB.position->direction = static_cast<EntityDirection>((enemyBB.position->direction + 2) % 4);
-            dirX *=-1;
-            dirY *= -1;
-        }
-
-        if(enemyBB.AI->currentPath.empty()){
-            enemyBB.AI->currentPath = {{x + dirX, y + dirY, true}};
-            return NodeStatus::SUCCESS;   
-        }
-        return NodeStatus::FAILURE;
-    }
-
-    JunctionDesitionNode(int forwardWeight, int sidewayWeight,  int backwardWeight){
-        Weights.SidewayWeight = sidewayWeight;
-        Weights.ForwardWeight = forwardWeight;
-        Weights.BackwardWeight = backwardWeight;
-    }
-};
-
-class PredictPlayersTurn : public Node
-{
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-        if(MovementSystem::HasReachedNode(*enemyBB.position, *enemyBB.movement) && enemyBB.position->x == enemyBB.movement->LastSeenPlayerX && enemyBB.position->y == enemyBB.movement->LastSeenPlayerY && enemyBB.movement->isChasing){
-
-            int dirX = (enemyBB.movement->lastSeenDirection == EntityDirection::Right) - (enemyBB.movement->lastSeenDirection == EntityDirection::Left);
-            int dirY = (enemyBB.movement->lastSeenDirection == EntityDirection::Down) - (enemyBB.movement->lastSeenDirection == EntityDirection::Up);
-
-            enemyBB.AI->currentPath = {{enemyBB.position->x + dirX, enemyBB.position->y + dirY, true}};
-
-            enemyBB.movement->LastSeenPlayerX = -1;
-            enemyBB.movement->LastSeenPlayerY = -1;
-            enemyBB.movement->isChasing = false;
-            return NodeStatus::SUCCESS;
-        }
-        return NodeStatus::FAILURE;
-    }
-};
-
-class MineTriggerNode : public Node
-{
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-        int originX = enemyBB.position->x;
-        int originY = enemyBB.position->y;
-
-        const GridCell* cell = bb.entityManager.GetGridCell(originX, originY);
-        if (cell == nullptr) {
-            return NodeStatus::FAILURE;
-        }
-
-        std::vector<int> toRemove;
-        for (int slot = 0; slot < 3; ++slot) {
-            int id = cell->entityIDs[slot];
-            if (id < 0 || id == enemyBB.entityID) {
-                continue;
-            }
-            
-            toRemove.push_back(id);
-        }
-
-        if (toRemove.empty()) {
-            return NodeStatus::FAILURE;
-        }
-
-        for (int id : toRemove) {
-            bb.entityManager.RequestRemoveEntityByID(id);
-        }
-
-        bb.entityManager.RequestRemoveEntityByID(enemyBB.entityID);
-
-        return NodeStatus::SUCCESS;
-    }
-};
-
-class WallChargeDetonateNode : public Node
-{
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-        if (enemyBB.staticComp->timer > 0) {
-            enemyBB.staticComp->timer -= 1;
-            return NodeStatus::RUNNING;
-        }
-
-        int originX = enemyBB.position->x;
-        int originY = enemyBB.position->y;
-
-        for (int dy = -1; dy <= 1; ++dy) {
-            for (int dx = -1; dx <= 1; ++dx) {
-                int x = originX + dx;
-                int y = originY + dy;
-                if (x < 0 || x >= bb.columns || y < 0 || y >= bb.rows) {
-                    continue;
-                }
-                const GridCell* cell = bb.entityManager.GetGridCell(x, y);
-                if (cell == nullptr) {
-                    continue;
-                }
-                std::vector<int> toRemove;
-                for (int slot = 0; slot < 3; ++slot) {
-                    int id = cell->entityIDs[slot];
-                    if (id >= 0 && id != enemyBB.entityID) {
-                        toRemove.push_back(id);
-                    }
-                }
-                for (int id : toRemove) {
-                    bb.entityManager.RequestRemoveEntityByID(id);
-                }
-            }
-        }
-
-        if (originX >= 0 && originX < bb.columns && originY >= 0 && originY < bb.rows) {
-            bb.level[originY][originX].type = FLOOR;
-            bb.level[originY][originX].isWalkable = true;
-        }
-
-        if (enemyBB.entityID >= 0) {
-            bb.entityManager.RequestRemoveEntityByID(enemyBB.entityID);
-        }
-
-        return NodeStatus::SUCCESS;
-    }
-};
-
-class ShareTargetInformationNode : public Node
-{
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-
-        auto* sharedBB = enemyBB.blackboardComponent->sharedBB;
-
-        if (enemyBB.movement->isChasing) {
-            sharedBB->ShareTargetInformation(
-                enemyBB.entityID,
-                enemyBB.movement->LastSeenPlayerX,
-                enemyBB.movement->LastSeenPlayerY,
-                enemyBB.movement->lastSeenDirection,
-                true);
-            return NodeStatus::SUCCESS;
-        }
-        
-        return NodeStatus::FAILURE;
-    }
-};
-
-class UseSharedTargetInformationNode : public Node
-{
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-        auto* sharedBB = enemyBB.blackboardComponent->sharedBB;
-
-        SharedTargetInfo target = sharedBB->GetLatestSharedTarget();
-
-        if (target.lastSeenX != enemyBB.movement->goalX && target.lastSeenY != enemyBB.movement->goalY && sharedBB->sharedTarget.isValidInfo) {
-            enemyBB.movement->goalX = target.lastSeenX;
-            enemyBB.movement->goalY = target.lastSeenY;
-            enemyBB.movement->LastSeenPlayerX = target.lastSeenX;
-            enemyBB.movement->LastSeenPlayerY = target.lastSeenY;
-            enemyBB.movement->isChasing = true;
-            return NodeStatus::SUCCESS;
-        }
-        
-        return NodeStatus::FAILURE;
-    }
-};
-
-class UpdateSharedData : public Node
-{
-public:
-    NodeStatus Tick(EnemyBlackboard& enemyBB, Blackboard& bb) override {
-        auto* sharedBB = enemyBB.blackboardComponent->sharedBB;
-
-        sharedBB->ShareTargetInformation(
-            enemyBB.entityID,
-            enemyBB.movement->LastSeenPlayerX,
-            enemyBB.movement->LastSeenPlayerY,
-            enemyBB.movement->lastSeenDirection,
-            false);
-
-        if (sharedBB == &bb.entityManager.commandoEnemyBlackboard) {
-            bb.entityManager.commandoEnemyBlackboard.ClearOrders();
-            bb.entityManager.commandoEnemyBlackboard.commandTickCount = 0;
-        }
-
-        std::cout << "no target on the position" << std::endl;
         return NodeStatus::SUCCESS;
     }
 };

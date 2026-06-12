@@ -8,15 +8,8 @@
 
 
 void GameMenu::DrawWindow(){
-    SDL_FRect rect;
-    rect = {0, 0, (float)cellWidth, (float)cellHight};
-
-    // Draw tiles
-    for (int i = 0; i < gameManager.blackboard.rows; i++){// loop for displaying current level
-        for(int j = 0; j < gameManager.blackboard.columns; j++){
-            DrawTile((*menuBlackboard.renderer), gameManager.level[i][j], &rect, j, i, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
-        }
-    }
+    
+    DrawTile((*menuBlackboard.renderer), gameManager.blackboard, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
 
     // Draw player
     gameManager.entityManager.GetPlayer().DrawEntity((*menuBlackboard.renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);

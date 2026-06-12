@@ -15,7 +15,7 @@ struct CommandoEnemyBlackboard;
 // ENUMS FOR ENTITY TYPES AND BEHAVIOR
 // ============================================================================
 
-enum class EnemyType {
+enum class AIType {
     BasicEnemy,
     AdvancedEnemy,
     CommandoEnemy,
@@ -35,6 +35,7 @@ enum class EntityType {
     CommandoLeaderEnemy,
     Mine,
     WallCharge,
+    Player,
     None
 };
 
@@ -158,8 +159,18 @@ struct MovementComponent {
 struct AIComponent {
     std::vector<Cell> currentPath;  // Path from pathfinding algorithm
     std::unique_ptr<Node> AI;       // Behavior tree root node
-    EnemyType enemyType;            // What type of enemy (affects behavior)
+    AIType aiType;            // What type of enemy (affects behavior)
     int tickCounter = 0;
+};
+
+/// Animation component
+///Part of Render Component with purpose of animating entitites
+struct Animation{
+    SDL_FRect sourceRect = {0, 0, 64, 64};
+    int spriteIndex = 0;
+    int timer = 0;
+    int frameTime = 5;
+    std::vector<std::pair<int, int>> spriteSequence = {{0, 0}, {64, 0}, {128, 0}, {64, 0}};
 };
 
 /// **RenderComponent**
@@ -168,6 +179,7 @@ struct AIComponent {
 struct RenderComponent {
     std::shared_ptr<SDL_Texture> texture;
     SDL_FRect rect;
+    Animation animation;
     // EntityDirection stored in MovementComponent (no duplication)
 };
 
@@ -184,7 +196,7 @@ struct BlackboardComponent {
 /// Used to quickly check what kind of entity this is
 struct TypeComponent {
     ActorType actorType;         // Dynamic or static?
-    EnemyType enemyType;         // Which enemy type?
+    EntityType entityType;         // Which entity type?
 };
 
 /// **StaticEntityComponent**
