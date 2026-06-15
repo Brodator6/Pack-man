@@ -69,4 +69,11 @@ public:
                 std::unordered_map<int, MovementComponent>& moveComponents,
                 std::unordered_map<int, RenderComponent>& renderComponents,
                 SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize);
+                
+    // Overload that respects a freeze flag to avoid advancing animation timers
+    void Update(std::unordered_map<int, PositionComponent>& posComponents,
+                std::unordered_map<int, MovementComponent>& moveComponents,
+                std::unordered_map<int, RenderComponent>& renderComponents,
+                SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize,
+                bool freezeAnimations);
 };

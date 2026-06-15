@@ -130,15 +130,15 @@ void AbilityMenu::ProposeAbilities() {
 std::string AbilityMenu::GetAbilityDescription(AbilityType type) const {
     switch (type) {
         case AbilityType::Mine:
-            return "Mine: Explosion ability\nCharges: 5, Cooldown: 5s";
+            return "Mine: Charges: 3, Cooldown: 5s";
         case AbilityType::WallCharge:
-            return "Wall Charge: Ram through walls\nCharges: 5, Cooldown: 50s";
+            return "Wall Charge Charges: 3, Cooldown: 50s";
         case AbilityType::RoadBlocker:
-            return "Road Blocker: Place obstacle\nCharges: 3, Cooldown: 50s";
+            return "Road Blocker: Charges: 3, Cooldown: 50s";
         case AbilityType::SpeedBoost:
-            return "Speed Boost: Increase movement speed\nDuration: 3s, Cooldown: 40s";
+            return "Speed Boost: Duration: 3s, Cooldown: 40s";
         case AbilityType::Invisibility:
-            return "Invisibility: Hide from enemies\nDuration: 5s, Cooldown: 40s";
+            return "Invisibility: Duration: 5s, Cooldown: 40s";
         case AbilityType::None:
         default:
             return "None";
@@ -194,7 +194,7 @@ std::function<void()> AbilityMenu::CreateAbilitySelectionHandler(int proposalInd
                 if (abilityBlackboard.playerAbilities[i].type == selectedAbility && 
                     abilityBlackboard.playerAbilities[i].isConsumable) {
                     // Add random charges (1 to 3)
-                    std::uniform_int_distribution<> chargesDist(1, 3);
+                    std::uniform_int_distribution<> chargesDist(3, 3);
                     int chargesToAdd = chargesDist(rng);
                     abilityBlackboard.playerAbilities[i].charges += chargesToAdd;
                     break;
@@ -239,5 +239,8 @@ SDL_AppResult AbilityMenu::HandleEvents(SDL_Event* Event) {
 }
 
 void AbilityMenu::HandleGameLogic() {
-    // No specific game logic needed for ability menu
+    // Freeze animations while ability menu is open
+    timeBlackboard.freezeAnimations = true;
+    timeBlackboard.previousTickTime = timeBlackboard.currentTime;
+    timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
 }

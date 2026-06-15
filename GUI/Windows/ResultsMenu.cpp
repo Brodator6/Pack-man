@@ -25,6 +25,8 @@ SDL_AppResult ResultsMenu::HandleEvents(SDL_Event *Event){//handling GUI events
 }
 
 void ResultsMenu::HandleGameLogic(){
+    // Freeze animations while results menu is open
+    timeBlackboard.freezeAnimations = true;
     timeBlackboard.previousTickTime = timeBlackboard.currentTime;
     timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
 }

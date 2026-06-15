@@ -110,6 +110,6 @@ void EntityManager::UpdateMovement() {
     movementSystem.Update(positionComponents, movementComponents, aiComponents);
 }
 
-void EntityManager::UpdateRender(SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize) {
-    renderSystem.Update(positionComponents, movementComponents, renderComponents, renderer, cellWidth, cellHeight, widthMargin, heightMargin, squareSize);
+void EntityManager::UpdateRender(SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize, bool freezeAnimations) {
+    renderSystem.Update(positionComponents, movementComponents, renderComponents, renderer, cellWidth, cellHeight, widthMargin, heightMargin, squareSize, freezeAnimations);
 }

@@ -54,4 +54,5 @@ struct TimeBlackboard{
     
     std::chrono::time_point<std::chrono::high_resolution_clock> frameEnd = std::chrono::high_resolution_clock::now(); // might want to replace auto with smth different
     std::chrono::duration<double>  frameDuration = std::chrono::duration<float>(0.0);
+    bool freezeAnimations = false; // when true, rendering should not advance animation timers
 };

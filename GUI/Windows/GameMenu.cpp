@@ -12,10 +12,10 @@ void GameMenu::DrawWindow(){
     DrawTile((*menuBlackboard.renderer), gameManager.blackboard, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
 
     // Draw player
-    gameManager.entityManager.GetPlayer().DrawEntity((*menuBlackboard.renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+    gameManager.entityManager.GetPlayer().DrawEntity((*menuBlackboard.renderer), cellWidth, cellHight, widthMargine, hightMargine, squareSize, timeBlackboard.freezeAnimations);
 
     // Draw all other entities using ECS render system
-    gameManager.entityManager.UpdateRender(*menuBlackboard.renderer, cellWidth, cellHight, widthMargine, hightMargine, squareSize);
+    gameManager.entityManager.UpdateRender(*menuBlackboard.renderer, cellWidth, cellHight, widthMargine, hightMargine, squareSize, timeBlackboard.freezeAnimations);
     
     // Draw UI
     scoreText.DrawElement(*menuBlackboard.renderer);
@@ -58,6 +58,8 @@ SDL_AppResult GameMenu::HandleEvents(SDL_Event *Event){
 };
 
 void GameMenu::HandleGameLogic(){
+    // Ensure animations are active for the main game loop
+    timeBlackboard.freezeAnimations = false;
     timeBlackboard.previousTickTime = timeBlackboard.currentTime;
     timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
     

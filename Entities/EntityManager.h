@@ -66,7 +66,7 @@ public:
     // functions for system calls
     void UpdateAI(Blackboard& blackboard);
     void UpdateMovement();
-    void UpdateRender(SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize);
+    void UpdateRender(SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize, bool freezeAnimations);
     
     EntityManager();
     void SetUp(Blackboard &bb);

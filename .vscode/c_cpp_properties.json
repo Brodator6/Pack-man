@@ -5,16 +5,16 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/src/SDL_Image/include",
-                "C:/stuff/mSYS2/mingw64/include/**",
-                "C:/stuff/mSYS2/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/**",
-                "C:/stuff/mSYS2/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/**"
+                "C:/msys64/mingw64/include/**",
+                "C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/**",
+                "C:/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/15.2.0/include/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
                 "_UNICODE"
             ],
-            "compilerPath": "C:\\stuff\\mSYS2\\usr\\bin\\gcc.exe",
+            "compilerPath": "C:\\msys64\\usr\\bin\\gcc.exe",
             "cStandard": "c17",
             "cppStandard": "gnu++17",
             "intelliSenseMode": "${default}"

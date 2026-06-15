@@ -48,7 +48,7 @@ public:
     void UpdateAbilitiesCooldown(float deltaTime);
 
 
-    void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize);
+    void DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize, bool freezeAnimations);
     
     Player(){};
     Player(int x, int Y, Blackboard *bb, std::map<SDL_Scancode, bool> controlsMap = {{SDL_SCANCODE_UP, false}, {SDL_SCANCODE_RIGHT, false}, {SDL_SCANCODE_DOWN, false}, {SDL_SCANCODE_LEFT, false}, {SDL_SCANCODE_1, false}, {SDL_SCANCODE_2, false}, {SDL_SCANCODE_3, false}, {SDL_SCANCODE_4, false}});

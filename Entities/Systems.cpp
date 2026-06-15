@@ -111,6 +111,15 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
                           std::unordered_map<int, MovementComponent>& moveComponents,
                           std::unordered_map<int, RenderComponent>& renderComponents,
                           SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize) {
+    // Default: call the overload that allows freezing animations
+    Update(posComponents, moveComponents, renderComponents, renderer, cellWidth, cellHeight, widthMargin, heightMargin, squareSize, false);
+}
+
+void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posComponents,
+                          std::unordered_map<int, MovementComponent>& moveComponents,
+                          std::unordered_map<int, RenderComponent>& renderComponents,
+                          SDL_Renderer* renderer, int cellWidth, int cellHeight, int widthMargin, int heightMargin, int squareSize,
+                          bool freezeAnimations) {
     for (auto& [entityID, renderComp] : renderComponents) {
         auto posIt = posComponents.find(entityID);
         if (posIt != posComponents.end()) {
@@ -129,12 +138,14 @@ void RenderSystem::Update(std::unordered_map<int, PositionComponent>& posCompone
                                       ((pos.direction == EntityDirection::Right) * 180.0) +
                                       ((pos.direction == EntityDirection::Down) * 270.0)), NULL, SDL_FLIP_NONE);
 
-            animationData.timer++;
-            if (animationData.timer % animationData.frameTime == 0) {
-                animationData.spriteIndex = (animationData.spriteIndex + 1) % animationData.spriteSequence.size();
-            }
-            if (animationData.timer >= animationData.frameTime) {
-                animationData.timer = 0;
+            if (!freezeAnimations) {
+                animationData.timer++;
+                if (animationData.timer % animationData.frameTime == 0) {
+                    animationData.spriteIndex = (animationData.spriteIndex + 1) % animationData.spriteSequence.size();
+                }
+                if (animationData.timer >= animationData.frameTime) {
+                    animationData.timer = 0;
+                }
             }
         }
     }

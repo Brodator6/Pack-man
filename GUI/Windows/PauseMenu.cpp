@@ -36,6 +36,8 @@ SDL_AppResult PauseMenu::HandleEvents(SDL_Event *Event){//handling GUI events
 }
 
 void PauseMenu::HandleGameLogic(){
+    // Freeze animations while pause menu is open
+    timeBlackboard.freezeAnimations = true;
     timeBlackboard.previousTickTime = timeBlackboard.currentTime;
     timeBlackboard.currentTime = std::chrono::high_resolution_clock::now();
 }

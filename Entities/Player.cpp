@@ -195,7 +195,7 @@ void Player::UpdateAbilitiesCooldown(float deltaTime){
     }
 }
 
-void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize){
+void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, int widthMargine, int hightMargine, int squareSize, bool freezeAnimations){
     this->renderComponent.rect.x = hightMargine + positionComponent.visualX * cellHight + 5;
     this->renderComponent.rect.y = widthMargine + positionComponent.visualY * cellWidth + 5;
     this->renderComponent.rect.w = squareSize - 10;
@@ -211,12 +211,14 @@ void Player::DrawEntity(SDL_Renderer *renderer, int cellWidth, int cellHight, in
                               ((positionComponent.direction == EntityDirection::Down) * 270.0)),
                              NULL, SDL_FLIP_NONE);
 
-    animationData.timer++;
-    if (animationData.timer % animationData.frameTime == 0) {
-        animationData.spriteIndex = (animationData.spriteIndex + 1) % animationData.spriteSequence.size();
-    }
-    if (animationData.timer >= animationData.frameTime) {
-        animationData.timer = 0;
+    if (!freezeAnimations) {
+        animationData.timer++;
+        if (animationData.timer % animationData.frameTime == 0) {
+            animationData.spriteIndex = (animationData.spriteIndex + 1) % animationData.spriteSequence.size();
+        }
+        if (animationData.timer >= animationData.frameTime) {
+            animationData.timer = 0;
+        }
     }
 }
 
@@ -225,7 +227,7 @@ Player::Player(int x, int y, Blackboard *bb, std::map<SDL_Scancode, bool> contro
     this->movementComponent = {x, y, 1.0f, x, y, -1, -1, EntityDirection::Down, false};
     renderComponent = {nullptr, {0, 0, 0, 0}, Animation{}};
 
-    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::Mine);
+    abilities[AbilityID::permanentAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
     abilities[AbilityID::permanentAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
     abilities[AbilityID::consumableAbility1] = bb->abilityFactory.CreateAbility(AbilityType::None);
     abilities[AbilityID::consumableAbility2] = bb->abilityFactory.CreateAbility(AbilityType::None);
